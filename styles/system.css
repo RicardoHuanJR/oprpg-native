@@ -1,0 +1,67 @@
+/* Paleta e organização inspiradas na cópia local do OP RPG original.
+   Implementação própria e escopada: nenhum estilo global ou dependência dnd5e. */
+.oprpg-native {
+  --op-bg: #0c0908; --op-soft: #171010; --op-card: #1d1413; --op-border: #3c2622;
+  --op-text: #f1e7dc; --op-muted: #c4ad95; --op-red: #c33531; --op-gold: #e3b53c; --op-gold-light: #f6d97a;
+  --color-text-primary: var(--op-text); --color-text-secondary: var(--op-muted);
+  --input-background-color: var(--op-soft); --input-text-color: var(--op-text); --input-border-color: var(--op-border);
+  color: var(--op-text); font-family: Arial, sans-serif;
+}
+.oprpg-native .window-header { background: #1d1413; color: var(--op-gold-light); border-bottom: 1px solid var(--op-border); }
+.oprpg-native .window-content { padding: 0; background: radial-gradient(ellipse at top left, #39151270, transparent 60%), var(--op-bg); overflow: auto; }
+.oprpg-native .op-sheet { width: 100%; }
+.oprpg-native .op-header { display: flex; align-items: center; gap: 18px; padding: 22px; border-bottom: 2px solid var(--op-red); background: linear-gradient(110deg, #301512, #120d0c); }
+.oprpg-native .op-header img { width: 84px; height: 92px; object-fit: cover; border: 1px solid var(--op-gold); border-radius: 6px; }
+.oprpg-native .op-heading { flex: 1; min-width: 0; }
+.oprpg-native .op-eyebrow { color: var(--op-gold); letter-spacing: .12em; font-size: 11px; margin: 0 0 8px; }
+.oprpg-native .op-eyebrow span { color: var(--op-muted); margin-left: 12px; font-size: 9px; }
+.oprpg-native .op-name input { font: bold 26px Georgia, serif; border: 0; background: transparent; height: 40px; padding: 0; }
+.oprpg-native .op-subtitle { color: var(--op-muted); margin: 5px 0 0; font-size: 12px; }
+.oprpg-native .op-level { width: 60px; text-align: center; }
+.oprpg-native .op-level input { font-size: 22px; text-align: center; }
+.oprpg-native .op-tabs { display: flex; padding: 0 18px; background: #171010; border-bottom: 1px solid var(--op-border); gap: 5px; }
+.oprpg-native .op-tabs button { border: 0; border-radius: 0; min-height: 42px; margin: 0; color: var(--op-muted); background: transparent; }
+.oprpg-native .op-tabs button[aria-pressed="true"] { color: var(--op-gold-light); border-bottom: 3px solid var(--op-gold); }
+.oprpg-native .op-body { border: 0; margin: 0; padding: 18px; min-width: 0; }
+.oprpg-native [hidden] { display: none !important; }
+.oprpg-native .op-card { background: var(--op-card); border: 1px solid var(--op-border); border-radius: 8px; padding: 14px; margin-bottom: 14px; box-shadow: 0 2px 10px #0003; min-width: 0; }
+.oprpg-native h2 { color: var(--op-gold-light); font: bold 18px Georgia, serif; border: 0; margin: 8px 0 12px; }
+.oprpg-native h3 { color: #e6c08c; font: bold 14px Georgia, serif; margin: 0 0 12px; }
+.oprpg-native .op-resources { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.oprpg-native .op-health { border-top: 3px solid var(--op-red); }
+.oprpg-native .op-power { border-top: 3px solid var(--op-gold); }
+.oprpg-native label { display: flex; flex-direction: column; gap: 5px; color: var(--op-muted); font-size: 11px; margin-bottom: 10px; }
+.oprpg-native input, .oprpg-native select, .oprpg-native textarea { width: 100%; min-width: 0; color: var(--op-text); border: 1px solid var(--op-border); border-radius: 4px; background: var(--op-soft); padding: 6px 8px; font: 13px Arial, sans-serif; }
+.oprpg-native input, .oprpg-native select { height: 32px; }
+.oprpg-native select option { background: var(--op-soft); color: var(--op-text); }
+.oprpg-native textarea { resize: vertical; min-height: 105px; }
+.oprpg-native .op-pair, .oprpg-native .op-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.oprpg-native .op-stat { display: flex; flex-direction: column; gap: 5px; font-size: 11px; color: var(--op-muted); }
+.oprpg-native .op-stat strong { font-size: 24px; color: var(--op-gold-light); }
+.oprpg-native .op-inline { display: flex; justify-content: space-between; font-size: 12px; padding-top: 6px; }
+.oprpg-native .op-attributes { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+.oprpg-native .op-attribute { border: 1px solid var(--op-border); border-radius: 7px; background: var(--op-card); text-align: center; padding: 10px 6px; }
+.oprpg-native .op-attribute h3 { font: bold 12px Arial, sans-serif; }
+.oprpg-native .op-attribute input[type="number"] { text-align: center; font-size: 22px; height: 40px; }
+.oprpg-native .op-modifier { display: block; color: var(--op-gold-light); font-size: 18px; margin-bottom: 8px; }
+.oprpg-native button { background: #261613; color: var(--op-gold-light); border: 1px solid #634030; border-radius: 4px; padding: 6px 10px; min-height: 30px; height: auto; cursor: pointer; font: 12px Arial, sans-serif; }
+.oprpg-native .op-attribute button { width: 100%; padding: 5px 0; font-size: 10px; }
+.oprpg-native .op-checkbox { display: flex; flex-direction: row; align-items: center; gap: 5px; margin: 10px 0; }
+.oprpg-native .op-checkbox input { width: 14px; height: 14px; accent-color: var(--op-gold); flex-shrink: 0; }
+.oprpg-native .op-attribute .op-checkbox { font-size: 9px; justify-content: center; }
+.oprpg-native p { font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
+.oprpg-native .op-hint { color: var(--op-muted); font-size: 11px; }
+.oprpg-native .op-traits { white-space: pre-wrap; }
+.oprpg-native .op-item-group header { display: flex; justify-content: space-between; align-items: center; }
+.oprpg-native ul { list-style: none; padding: 0; margin: 8px 0; }
+.oprpg-native .op-item-group li { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-top: 1px solid var(--op-border); }
+.oprpg-native .op-item-group li button { flex: 1; text-align: left; }
+.oprpg-native .op-badge { color: var(--op-gold-light); border: 1px solid var(--op-border); border-radius: 3px; padding: 3px 5px; font-size: 10px; }
+.oprpg-native .op-steps { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 0 20px; color: var(--op-gold); font-size: 11px; }
+.oprpg-native .op-steps span { border-bottom: 2px solid var(--op-red); padding: 8px; }
+.oprpg-native .op-checklist li { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--op-border); font-size: 13px; }
+.oprpg-native .op-checklist span { color: var(--op-gold); }
+.oprpg-native button:hover:not(:disabled) { border-color: var(--op-gold); background: #39211a; }
+.oprpg-native :is(button,input,textarea,select):focus-visible { outline: 2px solid var(--op-gold-light); outline-offset: 2px; }
+.oprpg-native .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@media (max-width: 640px) { .oprpg-native .op-resources { grid-template-columns: 1fr; } .oprpg-native .op-attributes { grid-template-columns: repeat(3, 1fr); } .oprpg-native .op-two-col { grid-template-columns: 1fr; } }

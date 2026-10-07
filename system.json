@@ -1,0 +1,22 @@
+{
+  "id": "oprpg-native",
+  "title": "OP RPG Nativo — Experimental",
+  "description": "Protótipo independente: fichas, criação assistida e espécies personalizadas. Automação parcial; sem conteúdo dos livros.",
+  "version": "0.1.0",
+  "url": "https://github.com/RicardoHuanJR/oprpg-native",
+  "manifest": "https://github.com/RicardoHuanJR/oprpg-native/releases/download/v0.1.0/system.json",
+  "download": "https://github.com/RicardoHuanJR/oprpg-native/releases/download/v0.1.0/oprpg-native-0.1.0.zip",
+  "compatibility": {"minimum": 14, "maximum": 14},
+  "esmodules": ["scripts/main.mjs"],
+  "styles": ["styles/system.css"],
+  "languages": [{"lang": "pt-BR", "name": "Português (Brasil)", "path": "lang/pt-BR.json"}],
+  "documentTypes": {
+    "Actor": {"character": {}, "npc": {}},
+    "Item": {"species": {}, "weapon": {}, "feature": {}, "technique": {}, "auxiliary": {}, "legendary": {}, "equipment": {}}
+  },
+  "primaryTokenAttribute": "vitality",
+  "secondaryTokenAttribute": "power",
+  "grid": {"distance": 1.5, "units": "m"},
+  "socket": false,
+  "initiative": "1d20 + @attributes.dexterity.modifier"
+}

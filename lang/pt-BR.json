@@ -1,0 +1,7 @@
+{
+  "TYPES": {
+    "Actor": {"character": "Personagem", "npc": "NPC / Inimigo"},
+    "Item": {"species": "Espécie / Raça", "weapon": "Arma / Ataque comum", "feature": "Característica", "technique": "Técnica de combate", "auxiliary": "Técnica auxiliar", "legendary": "Ação lendária", "equipment": "Equipamento"}
+  },
+  "OPRPG": {"Sheet": "Ficha OP RPG", "CreationAssistant": "Mostrar criação assistida", "CreationAssistantHint": "Oculta ou mostra a aba para toda a mesa, sem remover dados das fichas."}
+}
