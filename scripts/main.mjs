@@ -15,5 +15,5 @@ Hooks.once("init", () => {
   game.settings.register("oprpg-native", "creationAssistant", {
     name: "OPRPG.CreationAssistant", hint: "OPRPG.CreationAssistantHint", scope: "world", config: true, type: Boolean, default: true, requiresReload: true
   });
-  game.oprpg = Object.freeze({version: "0.1.0", attributes: ATTRIBUTES, categories: CATEGORIES, capabilities: Object.freeze({attributeRolls: true, speciesSnapshots: true, automaticDamage: false, automaticCosts: false, dae: false, argon: false})});
+  game.oprpg = Object.freeze({version: "0.1.1", attributes: ATTRIBUTES, categories: CATEGORIES, capabilities: Object.freeze({attributeRolls: true, speciesSnapshots: true, automaticDamage: false, automaticCosts: false, dae: false, argon: false})});
 });

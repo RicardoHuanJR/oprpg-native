@@ -75,10 +75,10 @@ test("rolagens respeitam modo cego e propriedade; salvaguarda proficiente soma b
   actor.isOwner=false; await assert.rejects(()=>actor.rollAttribute("will"));
   actor.isOwner=true; await assert.rejects(()=>actor.rollAttribute("int"));
 });
-test("manifesto e arquivos necessários, sem verified não comprovado ou livros", async () => {
+test("manifesto com compatibilidade explícita para seleção do sistema e arquivos necessários", async () => {
   const root=new URL("../",import.meta.url);
   const manifest=JSON.parse(await readFile(new URL("system.json",root),"utf8"));
-  assert.equal(manifest.compatibility.minimum,14); assert.equal(manifest.compatibility.verified,undefined);
+  assert.equal(manifest.compatibility.minimum,"14"); assert.equal(manifest.compatibility.verified,"14.367");
   for (const path of [...manifest.esmodules,...manifest.styles,...manifest.languages.map(lang=>lang.path),"templates/actor.hbs","templates/item.hbs"]) assert.ok((await stat(new URL(path,root))).isFile());
   const lang=JSON.parse(await readFile(new URL("lang/pt-BR.json",root),"utf8"));
   for(const type of Object.keys(manifest.documentTypes.Item)) assert.ok(lang.TYPES.Item[type]);
