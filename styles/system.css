@@ -64,4 +64,25 @@
 .oprpg-native button:hover:not(:disabled) { border-color: var(--op-gold); background: #39211a; }
 .oprpg-native :is(button,input,textarea,select):focus-visible { outline: 2px solid var(--op-gold-light); outline-offset: 2px; }
 .oprpg-native .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-@media (max-width: 640px) { .oprpg-native .op-resources { grid-template-columns: 1fr; } .oprpg-native .op-attributes { grid-template-columns: repeat(3, 1fr); } .oprpg-native .op-two-col { grid-template-columns: 1fr; } }
+.oprpg-native * {box-sizing:border-box;}
+.oprpg-native .op-layout {display:grid;grid-template-columns:220px minmax(0,1fr);min-height:100%;}
+.oprpg-native .op-sidebar {padding:14px;background:linear-gradient(#1d1110,#110b0a);border-right:1px solid #5a2a22;}
+.oprpg-native .op-sidebar fieldset {border:0;padding:0;margin:0;min-width:0;}
+.oprpg-native .op-sidebar .op-card {padding:10px;}
+.oprpg-native .op-portrait {height:240px;border:1px solid var(--op-gold);border-radius:8px;overflow:hidden;margin-bottom:14px;}
+.oprpg-native .op-portrait img {width:100%;height:100%;object-fit:cover;cursor:pointer;}
+.oprpg-native .op-main {min-width:0;}
+.oprpg-native .op-tabs-wide {flex-wrap:wrap;gap:0;padding:0 10px;}
+.oprpg-native .op-tabs-wide button {font-size:11px;padding:8px;min-height:36px;}
+.oprpg-native .op-skills li {display:grid;grid-template-columns:18px 1fr 26px 26px;align-items:center;gap:5px;padding:4px 0;border-bottom:1px solid var(--op-border);font-size:12px;}
+.oprpg-native .op-skills input[type=checkbox] {width:14px;height:14px;}
+.oprpg-native .op-skills button {background:transparent;border:0;text-align:left;color:var(--op-text);}
+.oprpg-native .op-buttons {display:flex;flex-wrap:wrap;gap:5px;}
+.oprpg-native .op-buttons button {flex:1;font-size:10px;}
+.oprpg-native .op-resource-row {display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;}
+.oprpg-native .op-effects li {display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--op-border);padding:10px 0;}
+.oprpg-native .op-effects img,.oprpg-native .op-item-icon {width:30px;height:30px;object-fit:contain;border:0;}
+.oprpg-chat {padding:12px;border-left:3px solid #c33531;background:#1d1413;color:#f1e7dc;}
+.oprpg-chat h3 {color:#f6d97a;}
+@media (max-width: 760px) { .oprpg-native .op-layout {grid-template-columns:170px minmax(0,1fr);} .oprpg-native .op-attributes {grid-template-columns:repeat(3,1fr);} .oprpg-native .op-two-col {grid-template-columns:1fr;} }
+@media (max-width: 540px) { .oprpg-native .op-layout {grid-template-columns:1fr;} .oprpg-native .op-sidebar {border-right:0;border-bottom:1px solid var(--op-border);} .oprpg-native .op-portrait {height:150px;} }

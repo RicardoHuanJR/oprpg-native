@@ -1,45 +1,34 @@
-# OP RPG Nativo — 0.1.1 experimental
+# OP RPG Nativo — 0.2.0 experimental
 
-Primeiro protótipo independente para Foundry VTT v14. ID próprio: `oprpg-native`. Não substitui o sistema antigo. Não contém textos, fichas de inimigos, imagens ou compêndios dos livros.
+Sistema independente para Foundry v14. Esta é uma etapa da reconstrução, ainda não a implementação completa. Não contém livros, imagens licenciadas ou compêndios do sistema original.
 
-## Incluído
+## Descanso e decisão do mestre
 
-- Fichas de personagem e NPC em ApplicationV2, com visual inspirado na cópia local do OP RPG original: cartões escuros, vermelho/dourado e abas.
-- Seis atributos OP RPG, testes e salvaguardas, com vantagem/desvantagem e respeito ao modo de rolagem do core.
-- Proficiência dos personagens nos níveis 1–20; NPCs usam valor informado pelo mestre. Iniciativa padrão usa Destreza; surpresa e exceções são manuais.
-- PV, temporários, negativos, PP, defesa e movimento. PP máximos padrão: 4 × nível; campo opcional de máximo informado permite registrar exceção da fonte. Não há gasto, cura ou recuperação automáticos.
-- Conteúdo separado em armas/ataques comuns, características, técnicas graduadas, auxiliares sem grau, equipamento e ações lendárias de NPC.
-- Uma atividade registrada por item. D20 de referência usa o atributo escolhido e proficiência configurada; não resolve sucesso, custo, dano nem alvos.
-- Aba de criação assistida como checklist desativável nas configurações do mundo. Desativar não remove dados.
-- Espécies personalizadas como itens do mundo, com origem, versão e traços descritivos. Seleção copia um snapshot para o personagem. Alterações na espécie original não reescrevem fichas existentes.
+O descanso longo iniciado com exaustão recupera metade dos PP máximos, somada ao saldo existente sem exceder o máximo, seguindo a escolha explícita do mestre pelo Jogador 2.1, página 36. A exaustão considerada é a registrada no início do descanso.
 
-## Teste isolado
+Na ficha, inicie o descanso e avance o relógio do mundo em pelo menos oito horas antes de concluir. O personagem precisa começar com pelo menos 1 PV; os benefícios do descanso longo são limitados a uma vez a cada 24 horas. A recuperação também repõe PV, remove temporários e reduz a exaustão em um nível. Descanso curto exige 30 minutos antes de liberar os Dados de Vida.
 
-1. Com Foundry fechado, extraia a pasta `oprpg-native` do ZIP para a pasta `Data/systems` **de um ambiente de teste separado**. O nome da pasta deve coincidir com o ID. Não sobrescreva `oprpg-system`, dnd5e ou qualquer módulo.
-2. Crie um mundo vazio e selecione “OP RPG Nativo — Experimental”. Não troque o sistema da campanha existente.
-3. Mantenha módulos desativados no primeiro teste. Crie personagem, NPC e um item de espécie; abra as fichas e confira erros no console.
-4. Para disponibilizar uma espécie aos jogadores, o mestre deve conceder permissão de Observador ao item do mundo pelas configurações de permissões do Foundry. Essa versão permite criar espécies pelo botão da ficha do mestre ou pelo diretório de itens.
-5. Registre a espécie na ficha e confira manualmente seus benefícios. Preencha atributos e recursos conforme a fonte; valores iniciais são placeholders técnicos, não personagem pronto.
-6. Teste a configuração “Mostrar criação assistida”, recarregue quando solicitado e confirme que a aba muda sem perder conteúdo.
+## Implementações parciais
 
-Publicação experimental autorizada pelo mestre: [repositório](https://github.com/RicardoHuanJR/oprpg-native). O manifesto acompanha o pacote experimental; não representa uma versão pronta para campanha.
+- Fichas com retrato, paleta escura, vermelho/dourado e abas para inventário, características, técnicas, poderes, treinamento, efeitos, informações pessoais e criação.
+- Atributos, salvaguardas e perícias, com vantagem/desvantagem, proficiência e exaustão.
+- Aplicação manual de dano/cura/temporários e automação parcial de gastos de PP e usos.
+- Atividades alternativas nos itens; técnicas com grau e auxiliares sem grau.
+- Controle parcial de ações, reações e ações lendárias durante combate.
+- Registro de Haki com aquisição de talentos e distribuição de PA autorizada pelo mestre.
+- Espécies personalizadas e checklist de criação desativável, preservando os dados.
+- Campos de navios e efeitos próprios: ainda não representam automação completa dessas regras.
 
-## Correção 0.1.1: sistema ausente na criação de mundos
+## Limitações e verificação
 
-A versão 0.1.0 não declarava `compatibility.verified`. No core 14.367 isso produz disponibilidade UNKNOWN (0), excluída pela tela de criação de mundos. A versão 0.1.1 declara a build de referência 14.367 e passa pela validação do manifesto e pelo filtro real dessa tela. Esta indicação de compatibilidade do pacote não certifica todas as mecânicas do sistema. A estrutura de dados não mudou; não há migração nesta correção.
+A reconstrução continua. Progressão e benefícios completos de espécies/estilos/profissões, resolução automática de alvos e salvaguardas, concentração, poderes de frutas, combate naval e autoridade entre vários clientes permanecem pendentes. Controle Cirúrgico é um registro por atividade. Compatibilidade com módulos será tratada depois.
 
-Atualize apenas este sistema experimental usando o novo manifesto e reinicie/recarregue a configuração do Foundry. Se a instalação anterior ainda aponta para o manifesto fixo v0.1.0, use o [manifesto atual](https://raw.githubusercontent.com/RicardoHuanJR/oprpg-native/main/system.json) na instalação. Não remova mundos nem altere o sistema original.
+46 testes locais passaram, incluindo modelos e seleção do sistema com bibliotecas do core 14.367. A criação de mundo também foi verificada no servidor isolado. Isso não certifica a renderização das novas fichas ou uma sessão completa com vários jogadores; use um mundo de teste e módulos desativados. Preserve um backup antes de abrir dados anteriores, pois esta etapa acrescenta campos e tipos.
 
-## Limitações
+## Instalação e atualizações
 
-Não é uma implementação completa das regras. Ausentes: perícias, avanço automatizado, benefícios automáticos de espécie/estilo/profissão, dano/cura, custos, descanso, concentração, condições, efeitos próprios, Haki/fruta, embarcações, ataque combinado, recuperação lendária e controle multicliente. Controle Cirúrgico é apenas um registro por atividade. Não importar compêndios do sistema antigo como se seus campos fossem compatíveis.
+O manifesto permanece sempre neste endereço: https://raw.githubusercontent.com/RicardoHuanJR/oprpg-native/main/system.json
 
-DAE e Argon não estão integrados nesta versão. HUD próprio e catálogo de efeitos continuam no plano. Campos oficiais são referências cadastradas pelo usuário, sem certificação automática de conteúdo. Não coloque segredos do mestre em ficha concedida ao jogador.
+Use a verificação de atualização do Foundry. O pacote modifica somente `oprpg-native`; não substitua o sistema original nem altere o sistema de uma campanha existente. Após atualizar, reinicie o Foundry para carregar os novos arquivos.
 
-Modelos e manifesto testados com bibliotecas locais do core 14.367 em memória; fichas, persistência e multicliente ainda precisam de teste em um mundo v14. Consultas oficiais: [modelos](https://foundryvtt.com/article/system-data-models/), [ActorSheetV2](https://foundryvtt.com/api/classes/foundry.applications.sheets.ActorSheetV2.html), [DocumentSheetV2](https://foundryvtt.com/api/classes/foundry.applications.api.DocumentSheetV2.html).
-
-## Download
-
-[ZIP v0.1.1](https://github.com/RicardoHuanJR/oprpg-native/releases/download/v0.1.1/oprpg-native-0.1.1.zip) · [Manifesto atual](https://raw.githubusercontent.com/RicardoHuanJR/oprpg-native/main/system.json).
-
-Consulte [correção e verificação](docs/CORRECAO-0.1.1.md) e [campos implementados](docs/CAMPOS-IMPLEMENTADOS-0.1.md). `npm test` executa os nove testes portáteis; quatro testes adicionais usam bibliotecas locais do Foundry e não redistribuem o core.
+[Download 0.2.0](https://github.com/RicardoHuanJR/oprpg-native/releases/download/v0.2.0/oprpg-native-0.2.0.zip)

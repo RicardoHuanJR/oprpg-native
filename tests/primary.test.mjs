@@ -27,14 +27,16 @@ test("snapshot de espécie preserva autoria/versão sem seguir edições posteri
 // Simulação reduzida de contratos: não substitui validação pelo core Foundry.
 class Field { constructor(options={}) { this.options=options; } }
 class SchemaField extends Field { constructor(fields) { super(); this.fields=fields; } }
+class ArrayField extends Field {constructor(element,options={}){super({initial:[],...options});this.element=element;}}
 function defaults(fields) { return Object.fromEntries(Object.entries(fields).map(([key,field])=>[key,field instanceof SchemaField ? defaults(field.fields) : field.options.initial])); }
 class Model { constructor() { Object.assign(this,defaults(this.constructor.defineSchema())); } prepareDerivedData() {} }
 class Sheet { async _prepareContext() {return {};} render(){return this;} }
 const registered=[], errors=[], messages=[];
 let assistant=true;
-globalThis.foundry={data:{fields:{NumberField:Field,StringField:Field,BooleanField:Field,SchemaField}},abstract:{TypeDataModel:Model},documents:{Actor:class {}},applications:{api:{HandlebarsApplicationMixin:cls=>cls},sheets:{ActorSheetV2:Sheet,ItemSheetV2:Sheet},apps:{DocumentSheetConfig:{registerSheet:(...args)=>registered.push(args)}}},utils:{escapeHTML:value=>value.replaceAll("<","&lt;").replaceAll(">","&gt;")}};
+globalThis.foundry={data:{fields:{NumberField:Field,StringField:Field,BooleanField:Field,SchemaField,ArrayField}},abstract:{TypeDataModel:Model},documents:{Actor:class {}},applications:{api:{HandlebarsApplicationMixin:cls=>cls},sheets:{ActorSheetV2:Sheet,ItemSheetV2:Sheet},apps:{DocumentSheetConfig:{registerSheet:(...args)=>registered.push(args)}}},utils:{escapeHTML:value=>value.replaceAll("<","&lt;").replaceAll(">","&gt;")}};
 globalThis.Actor=class {}; globalThis.Item=class {};
-globalThis.CONFIG={Actor:{dataModels:{}},Item:{dataModels:{}}};
+globalThis.CONFIG={Actor:{dataModels:{}},Item:{dataModels:{}},Combat:{}};
+globalThis.foundry.documents.Combat=class {};
 globalThis.ui={notifications:{error:value=>errors.push(value),info:()=>{}}};
 globalThis.game={user:{isGM:true},items:[],settings:{get:(namespace)=>namespace==="core" ? "blindroll" : assistant,register:()=>{}}};
 globalThis.ChatMessage={getSpeaker:()=>({actor:"example"})};
