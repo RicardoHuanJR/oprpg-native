@@ -32,6 +32,7 @@ export class CharacterData extends foundry.abstract.TypeDataModel {
       rest:schema({lastLongRest:nullableNumber(),startedAt:nullableNumber(),startHP:number(0,{min:0}),startExhaustion:number(0,{min:0,max:6}),kind:string("long",{choices:["short","long"]}),shortEligible:boolean()}),
       damageMitigation:schema({resistances:list(),vulnerabilities:list(),immunities:list()}),
       resources:new f.ArrayField(customResource(),{initial:[]}),
+      favorites:list(),
       combat:schema({attacksPerAction:number(1,{min:1}),state:schema({ownEpoch:string(),actionUsed:boolean(),powerfulUsed:boolean(),bonusUsed:boolean(),reactionUsed:boolean(),attacksRemaining:number(0,{min:0}),techniqueEpoch:string(),legendaryWindowEpoch:string()})}),
       appearance:schema({wallpaper:string(),portraitMode:string("actor",{choices:["actor","token"]})}),
       personal:schema({dream:string(),path:string(),background:string(),personality:string(),honor:string(),notes:string()}),

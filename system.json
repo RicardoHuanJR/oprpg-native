@@ -2,10 +2,10 @@
   "id": "oprpg-native",
   "title": "OP RPG Nativo — Experimental",
   "description": "Reconstrução experimental independente: fichas, espécies personalizadas e automações parciais de recursos e descanso. Sem conteúdo dos livros.",
-  "version": "0.2.1",
+  "version": "0.2.3",
   "url": "https://github.com/RicardoHuanJR/oprpg-native",
   "manifest": "https://raw.githubusercontent.com/RicardoHuanJR/oprpg-native/main/system.json",
-  "download": "https://github.com/RicardoHuanJR/oprpg-native/releases/download/v0.2.1/oprpg-native-0.2.1.zip",
+  "download": "https://github.com/RicardoHuanJR/oprpg-native/releases/download/v0.2.3/oprpg-native-0.2.3.zip",
   "compatibility": {
     "minimum": "14",
     "verified": "14.367",
@@ -15,7 +15,8 @@
     "scripts/main.mjs"
   ],
   "styles": [
-    "styles/system.css"
+    "styles/system.css",
+    "styles/classic.css"
   ],
   "languages": [
     {

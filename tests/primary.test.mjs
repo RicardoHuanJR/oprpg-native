@@ -90,3 +90,32 @@ test("salvaguarda do bloco usa bônus informado uma vez e conserva penalidade de
   actor.system.attributes.strength.saveProficient=true;actor.system.attributes.strength.saveOverride=7;actor.system.prepareDerivedData();
   await actor.rollAttribute("strength",{save:true});assert.equal(messages.at(-1).formula,"1d20 + 3 + 0");
 });
+test("favoritos e exaustão usam dados próprios sem duplicar itens nem rolar dados",async()=>{
+  const item={id:"owned",name:"Teste"};const actor={isOwner:true,system:{favorites:[],exhaustion:0},items:{get:id=>id===item.id?item:null},async update(changes){for(const [key,value]of Object.entries(changes))this.system[key.split('.').at(-1)]=value;}};
+  const sheet={actor};const actions=sheets.OPRPGActorSheet.DEFAULT_OPTIONS.actions;
+  await actions.toggleFavorite.call(sheet,{}, {dataset:{itemId:"owned"}});assert.deepEqual(actor.system.favorites,["owned"]);
+  await actions.toggleFavorite.call(sheet,{}, {dataset:{itemId:"owned"}});assert.deepEqual(actor.system.favorites,[]);
+  await actions.setExhaustion.call(sheet,{}, {dataset:{level:"3"}});assert.equal(actor.system.exhaustion,3);
+  await actions.setExhaustion.call(sheet,{}, {dataset:{level:"3"}});assert.equal(actor.system.exhaustion,2);
+  actor.isOwner=false;await actions.toggleFavorite.call(sheet,{}, {dataset:{itemId:"owned"}});assert.deepEqual(actor.system.favorites,[]);
+});
+test("modo de uso conserva rolagens e desativa edição sem alterar o documento",async()=>{
+ const system=new models.CharacterData();system.prepareDerivedData();
+ const sheet=new sheets.OPRPGActorSheet();sheet.actor={system,type:"character",isOwner:true,items:[],effects:[]};
+ let context=await sheet._prepareContext({});assert.equal(context.editable,true);assert.equal(context.canUse,true);
+ const before=JSON.stringify(system);sheets.OPRPGActorSheet.DEFAULT_OPTIONS.actions.toggleEditMode.call(sheet);
+ context=await sheet._prepareContext({});assert.equal(context.editable,false);assert.equal(context.canUse,true);assert.equal(JSON.stringify(system),before);
+ sheet.actor.isOwner=false;context=await sheet._prepareContext({});assert.equal(context.canUse,false);
+});
+test("preparação do documento preenche modificadores, perícias e PP sem alterar os saldos",()=>{
+ const actor=new OPRPGActor();actor.system=new models.CharacterData();actor.system.progression.level=5;actor.system.power.value=3;
+ actor.prepareDerivedData();assert.equal(actor.system.power.max,20);assert.equal(actor.system.power.value,3);
+ assert.equal(actor.system.attributes.strength.modifier,0);assert.equal(actor.system.skills.perception.passive,10);
+ actor.prepareDerivedData();assert.equal(actor.system.power.max,20);assert.equal(actor.system.power.value,3);
+});
+test("ficha de item também separa edição e uso da atividade",async()=>{
+ const sheet=new sheets.OPRPGItemSheet();sheet.item={isOwner:true,type:'weapon',system:new models.WeaponData(),actor:{isOwner:true}};
+ let context=await sheet._prepareContext({});assert.equal(context.editable,true);assert.equal(context.canRoll,true);
+ sheets.OPRPGItemSheet.DEFAULT_OPTIONS.actions.toggleEditMode.call(sheet);
+ context=await sheet._prepareContext({});assert.equal(context.editable,false);assert.equal(context.canRoll,true);
+});

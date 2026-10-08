@@ -1,0 +1,190 @@
+/* Composição própria baseada nas proporções da ficha usada na mesa. */
+.oprpg-native .op-classic-sheet {background:radial-gradient(ellipse at 80% 0,#64221922,transparent 50%),#110c0b;}
+.oprpg-native .op-classic-sheet>.op-header {min-height:145px;padding:28px 34px 26px;border:0;border-bottom:1px solid #644637;background:linear-gradient(110deg,#241411,#160f0d 70%);}
+.oprpg-native .op-classic-sheet .op-name input {font-size:38px;font-weight:400;letter-spacing:1px;text-shadow:1px 2px 3px #000;height:50px;}
+.oprpg-native .op-classic-sheet .op-name {margin:0;}
+.oprpg-native .op-classic-sheet .op-subtitle {color:#d4b86d;text-transform:uppercase;letter-spacing:1px;font-size:11px;}
+.oprpg-native .op-classic-sheet>.op-header>label {width:76px;text-align:center;color:#d4b86d;text-transform:uppercase;font-size:10px;}
+.oprpg-native .op-classic-sheet>.op-header>label input {border:1px solid #95774b;border-radius:50%;height:66px;font-size:29px;font-family:Georgia,serif;text-align:center;background:#0e0909;}
+.oprpg-native .op-classic-sheet .op-layout {grid-template-columns:230px minmax(0,1fr);}
+.oprpg-native .op-classic-sheet .op-sidebar {padding:16px 18px 22px;background:#160e0d;border-right:1px solid #563a2c;}
+.oprpg-native .op-classic-sheet .op-portrait {height:260px;border-radius:3px;border:1px solid #9b7950;box-shadow:0 2px 8px #0009;margin:0 0 10px;}
+.oprpg-native .op-classic-sheet .op-portrait-switch {border:0;border-bottom:1px solid #493023;background:transparent;font-size:10px;color:#ac967c;min-height:23px;margin:0 0 14px;}
+.oprpg-native .op-classic-defense {position:relative;display:flex;flex-direction:column;align-items:center;padding:5px 0 14px;}
+.oprpg-native .op-classic-defense>span {font-size:9px;color:#c4ad95;letter-spacing:.6px;}
+.oprpg-native .op-classic-defense label {position:relative;width:70px;margin:8px 0 0;}
+.oprpg-native .op-classic-defense label::before {content:"";position:absolute;inset:-4px;border:1px solid #8d7042;clip-path:polygon(50% 0,100% 18%,90% 75%,50% 100%,10% 75%,0 18%);background:#281a13;pointer-events:none;}
+.oprpg-native .op-classic-defense input {position:relative;height:55px;text-align:center;border:0;background:transparent;font:29px Georgia,serif;color:#f1dfac;}
+.oprpg-native .op-classic-defense>small {z-index:1;font-size:10px;color:#ac8c56;margin-top:-6px;}
+.oprpg-native .op-lozenges {display:grid;grid-template-columns:repeat(3,1fr);gap:5px;border-top:1px solid #553824;border-bottom:1px solid #553824;padding:12px 0;margin:12px 0 22px;}
+.oprpg-native .op-lozenges>div {text-align:center;display:flex;flex-direction:column;gap:7px;}
+.oprpg-native .op-lozenges strong {color:#eadfc9;font:20px Georgia,serif;}
+.oprpg-native .op-lozenges strong small {font:10px Arial,sans-serif;}
+.oprpg-native .op-lozenges>div>span {font-size:8px;letter-spacing:.3px;color:#b49b79;}
+.oprpg-native .op-classic-resource {margin:0 0 22px;}
+.oprpg-native .op-classic-resource>header {display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;}
+.oprpg-native .op-classic-resource h3 {font:11px Arial,sans-serif;letter-spacing:.8px;text-transform:uppercase;margin:0;color:#d1bda0;}
+.oprpg-native .op-classic-resource>header>button {border:0;background:transparent;min-height:20px;padding:0;color:#b49b79;}
+.oprpg-native .op-classic-resource .op-meter {position:relative;height:31px;border:1px solid #634136;border-radius:2px;margin:0;background:#0c0807;}
+.oprpg-native .op-classic-resource .op-meter>span {position:absolute;inset:0 auto 0 0;opacity:.85;}
+.oprpg-native .op-classic-resource .op-meter-health>span {background:linear-gradient(90deg,#4e1917,#9b3428);}
+.oprpg-native .op-classic-resource .op-meter-power>span {background:linear-gradient(90deg,#6d4b16,#b58b31);}
+.oprpg-native .op-classic-resource .op-meter>label {position:absolute;inset:0;display:flex;flex-direction:row;align-items:center;justify-content:center;gap:4px;margin:0;color:#f1e7dc;font-size:14px;}
+.oprpg-native .op-classic-resource .op-meter input {height:27px;width:48px;padding:0;text-align:right;border:0;background:transparent;font-weight:bold;box-shadow:none;}
+.oprpg-native .op-classic-resource .op-resource-notes {font-size:9px;color:#aa927a;margin:7px 0;}
+.oprpg-native .op-classic-resource .op-buttons button {background:transparent;color:#c4ad95;border:0;padding:2px;min-height:20px;font-size:9px;}
+.oprpg-native .op-exhaustion-row {display:flex;flex-direction:row;align-items:center;justify-content:space-between;padding-top:8px;border-top:1px solid #493023;}
+.oprpg-native .op-exhaustion-row input {width:45px;height:25px;text-align:center;}
+.oprpg-native .op-classic-sheet .op-tabs {padding:0 14px;background:#120d0c;border-bottom:1px solid #634136;}
+.oprpg-native .op-classic-sheet .op-tabs button {font-size:10px;padding:10px 7px;color:#b6a38c;min-height:38px;}
+.oprpg-native .op-classic-sheet .op-tabs button[aria-pressed=true] {color:#eed599;border-bottom:2px solid #ba8c46;background:linear-gradient(transparent,#59422322);}
+.oprpg-native .op-classic-sheet .op-body {padding:20px;}
+.oprpg-native .op-classic-sheet .op-attributes {display:flex;justify-content:center;gap:22px;padding:4px 0 18px;}
+.oprpg-native .op-ability-emblem {position:relative;width:64px;min-height:90px;display:flex;align-items:center;flex-direction:column;gap:4px;}
+.oprpg-native .op-ability-emblem::before {content:"";position:absolute;inset:0 0 15px;background:linear-gradient(#31231a,#1b120e);border:1px solid #7a5e3c;border-radius:3px 3px 18px 18px;box-shadow:0 2px 4px #0005;}
+.oprpg-native .op-ability-emblem>button {z-index:1;border:0;background:transparent;min-height:23px;padding:3px 0 0;color:#c6ae7e;font-size:11px;letter-spacing:1px;}
+.oprpg-native .op-ability-emblem>strong {z-index:1;font:26px Georgia,serif;font-weight:400;color:#f1e7dc;}
+.oprpg-native .op-ability-emblem>label {z-index:1;width:46px;margin:4px 0 0;}
+.oprpg-native .op-ability-emblem input {height:24px;text-align:center;border:1px solid #665030;border-radius:2px;background:#100b08;color:#d5b976;font-size:12px;padding:0;}
+.oprpg-native .op-classic-sheet .op-body>section>p.op-hint {text-align:center;font-size:9px;opacity:.7;margin:0 0 18px;}
+.oprpg-native .op-classic-sheet .op-card {position:relative;border:1px solid #584332;border-radius:2px;background:#18110e;box-shadow:none;padding:12px;margin-bottom:18px;}
+.oprpg-native .op-classic-sheet .op-card>h3 {text-align:center;font-size:12px;letter-spacing:.5px;font-weight:400;border-bottom:1px solid #473426;padding-bottom:10px;color:#d9bd8b;}
+.oprpg-native .op-classic-sheet .op-two-col {grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;}
+.oprpg-native .op-classic-sheet .op-skills button {font-size:11px;min-height:24px;padding:2px;}
+.oprpg-native .op-classic-sheet .op-skills li {padding:3px 0;border-color:#35281f;}
+.oprpg-native .op-classic-sheet .op-skills input[type=checkbox],.oprpg-native .op-saves input[type=checkbox] {appearance:none;width:10px;height:10px;border:1px solid #9b7d4f;border-radius:50%;padding:0;}
+.oprpg-native .op-classic-sheet .op-skills input:checked,.oprpg-native .op-saves input:checked {background:#bd9a51;box-shadow:inset 0 0 0 2px #21180f;}
+.oprpg-native .op-saves li {display:flex;align-items:center;gap:7px;padding:4px 0;font-size:11px;border-bottom:1px solid #35281f;}
+.oprpg-native .op-saves li>button {flex:1;text-align:left;background:transparent;border:0;color:#e0d2bd;font-size:11px;padding:3px;min-height:25px;}
+.oprpg-native .op-saves li>strong {width:25px;text-align:center;color:#e0d2bd;font-weight:400;}
+.oprpg-native .op-saves li>input[type=number] {width:52px;height:25px;font-size:11px;}
+.oprpg-native .op-classic-sheet .op-settings>summary {font-family:Georgia,serif;font-size:12px;font-weight:400;color:#d9bd8b;}
+.oprpg-native .op-classic-sheet .op-item-group>header {background:#291b14;padding:7px 10px;margin:-12px -12px 12px;border-bottom:1px solid #584332;}
+.oprpg-native .op-classic-sheet .op-item-group>header h3 {margin:0;font-size:12px;font-weight:400;}
+.oprpg-native .op-classic-sheet .op-item-group>header button {border:0;background:transparent;font-size:10px;min-height:23px;}
+@media(max-width:850px){.oprpg-native .op-classic-sheet .op-layout{grid-template-columns:200px minmax(0,1fr)}.oprpg-native .op-classic-sheet .op-attributes{gap:10px}.oprpg-native .op-classic-sheet .op-portrait{height:230px}}
+@media(max-width:680px){.oprpg-native .op-classic-sheet .op-two-col{grid-template-columns:1fr}.oprpg-native .op-classic-sheet .op-attributes{flex-wrap:wrap}.oprpg-native .op-classic-sheet .op-name input{font-size:27px}}
+@media(max-width:540px){.oprpg-native .op-classic-sheet .op-layout{grid-template-columns:1fr}.oprpg-native .op-classic-sheet .op-sidebar{border-right:0}.oprpg-native .op-classic-sheet>.op-header{padding:20px}}
+/* Estrutura da ficha anterior: cabeçalho 170, lateral 230 e abas na borda direita. */
+.oprpg-native .op-classic-sheet {position:relative;min-width:800px;min-height:700px;padding-right:44px;}
+.oprpg-native .op-classic-sheet>.op-header {height:170px;min-height:170px;padding:0 48px;}
+.oprpg-native .op-classic-sheet .op-name input {font-size:46px;letter-spacing:2px;height:58px;}
+.oprpg-native .op-classic-sheet>.op-header>label {width:78px;}
+.oprpg-native .op-classic-sheet>.op-header>label input {height:78px;}
+.oprpg-native .op-classic-sheet .op-layout {grid-template-columns:230px minmax(0,1fr);gap:12px;padding:8px 0 8px 8px;}
+.oprpg-native .op-classic-sheet .op-sidebar {padding:0;background:transparent;border:0;}
+.oprpg-native .op-character-card {position:relative;background:#1d1413;border-radius:3px;box-shadow:0 0 9px #0009;}
+.oprpg-native .op-character-card>fieldset {padding:0 10px 10px;}
+.oprpg-native .op-classic-sheet .op-portrait {height:270px;min-height:230px;border:0;border-bottom:2px solid #ad8b48;border-radius:3px 3px 0 0;position:relative;margin:0;box-shadow:none;}
+.oprpg-native .op-classic-sheet .op-portrait::after {content:"";position:absolute;inset:6px 6px 8px;border:2px solid #ad8b48;pointer-events:none;}
+.oprpg-native .op-classic-sheet .op-portrait img {object-position:top center;}
+.oprpg-native .op-classic-sheet .op-portrait-switch {position:absolute;top:0;left:0;right:0;height:39px;z-index:2;background:linear-gradient(#000a,#0005,transparent);color:#d2b66f;border:0;margin:0;font-size:10px;text-transform:uppercase;}
+.oprpg-native .op-sidebar-collapser {position:absolute;left:100%;top:8px;z-index:2;min-height:32px;width:16px;padding:0;background:#1d1413;border:0;border-radius:0 3px 3px 0;}
+.oprpg-native .op-classic-sheet .op-tabs-right {position:absolute;right:0;top:186px;width:36px;display:flex;flex-direction:column;flex-wrap:nowrap;border:0;background:transparent;gap:10px;padding:0;}
+.oprpg-native .op-classic-sheet .op-tabs-right button {display:grid;place-content:center;width:36px;height:40px;padding:0;font-size:16px;border:0;border-radius:0 4px 4px 0;background:#241811;color:#b39b6c;}
+.oprpg-native .op-classic-sheet .op-tabs-right button[aria-pressed=true] {background:#c9a557;color:#21180c;border:0;box-shadow:0 0 6px #0008;}
+.oprpg-native .op-classic-sheet .op-main {padding-right:10px;}
+.oprpg-native .op-classic-sheet .op-body {padding:12px 0 0;}
+.oprpg-native .op-classic-sheet:has(section[aria-label="Detalhes"]:not([hidden])) .op-body {padding-top:61px;}
+.oprpg-native .op-classic-sheet .op-attributes {position:absolute;top:146px;left:254px;right:58px;gap:22px;padding:0;flex-wrap:nowrap;}
+.oprpg-native .op-classic-sheet .op-ability-emblem {height:64px;min-height:64px;width:64px;flex-shrink:0;gap:2px;}
+.oprpg-native .op-classic-sheet .op-ability-emblem::before {inset:0 0 0;background:linear-gradient(#33261b,#1d140f);border-radius:3px 3px 14px 14px;}
+.oprpg-native .op-classic-sheet .op-ability-emblem>button {padding-top:5px;min-height:20px;}
+.oprpg-native .op-classic-sheet .op-ability-emblem>strong {font-size:22px;line-height:23px;}
+.oprpg-native .op-classic-sheet .op-ability-emblem>label {margin:0;width:50px;}
+.oprpg-native .op-classic-sheet .op-ability-emblem input {width:50px;height:23px;border-radius:3px;}
+.oprpg-native .op-classic-sheet .op-two-col {grid-template-columns:minmax(230px,1fr) minmax(230px,1fr);gap:16px;}
+.oprpg-native .op-classic-sheet .op-card {border-radius:8px;border:1px solid #3c2622;background:#1d1413;box-shadow:0 2px 10px #0004;}
+.oprpg-native .op-classic-sheet .op-card>h3 {font:bold 12px Arial,sans-serif;text-transform:uppercase;letter-spacing:.5px;}
+.oprpg-native .op-identity-pills {display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
+.oprpg-native .op-identity-pills>div {border:1px solid #6a5030;border-radius:16px;background:linear-gradient(110deg,#38281b,#1a120c);min-height:46px;padding:8px 15px;display:flex;flex-direction:column;gap:3px;}
+.oprpg-native .op-identity-pills small {color:#a99061;font-size:8px;letter-spacing:.7px;}
+.oprpg-native .op-identity-pills strong {font:14px Georgia,serif;color:#e6cc94;}
+.oprpg-native .op-sidebar-collapsed .op-layout {grid-template-columns:0 minmax(0,1fr);}
+.oprpg-native .op-sidebar-collapsed .op-sidebar {visibility:hidden;}
+.oprpg-native .op-sidebar-collapsed .op-sidebar-collapser {visibility:visible;left:0;}
+.oprpg-native .op-sidebar-collapsed .op-attributes {left:28px;}
+.oprpg-native .op-classic-sheet>.op-header {position:relative;padding-bottom:20px;}
+.oprpg-native .op-header-actions {position:absolute;right:48px;bottom:14px;display:flex;gap:8px;}
+.oprpg-native .op-header-actions button {width:27px;height:27px;min-height:27px;display:grid;place-content:center;border:1px solid #7f653a;border-radius:50%;padding:0;background:#1d140e;color:#d2b66f;font-size:15px;}
+@font-face{font-family:OPSheetTitle;src:url('/fonts/modesto-condensed/modesto-condensed-bold.woff2') format('woff2');font-weight:700;}
+.oprpg-native .op-classic-sheet {background:linear-gradient(#170f1d,#1f160b);}
+.oprpg-native .op-classic-sheet>.op-header {background-image:linear-gradient(#14101b55,#1c1328aa),var(--op-header-art,none);background-size:cover;background-position:center;border-bottom:0;}
+.oprpg-native .op-classic-sheet .op-name input {font-family:OPSheetTitle,"Palatino Linotype",serif;font-weight:700;font-size:46px;color:#fff;}
+.oprpg-native .op-classic-sheet .op-layout {padding-top:0;}
+.oprpg-native .op-classic-sheet .op-character-card {background:#26272b;}
+.oprpg-native .op-classic-sheet .op-lozenges {position:relative;padding:0;height:69px;align-items:start;border:0;margin:5px 0 12px;gap:5px;}
+.oprpg-native .op-classic-sheet .op-lozenges>div:nth-child(2){margin-top:25px;}
+.oprpg-native .op-classic-sheet .op-lozenges strong{background:linear-gradient(#c0b391,#807359);clip-path:polygon(20% 0,80% 0,100% 50%,80% 100%,20% 100%,0 50%);color:#fff;font:bold 20px Arial,sans-serif;line-height:31px;}
+.oprpg-native .op-classic-sheet .op-lozenges>div>span{font-size:8px;color:#dac489;font-weight:bold;}
+.oprpg-native .op-classic-sheet .op-classic-defense {margin-top:-18px;z-index:1;padding-bottom:0;}
+.oprpg-native .op-classic-sheet .op-classic-defense>span {display:none;}
+.oprpg-native .op-classic-sheet .op-classic-defense label {width:58px;}
+.oprpg-native .op-classic-sheet .op-classic-defense label::before {clip-path:polygon(0 0,100% 0,90% 65%,75% 90%,50% 100%,25% 90%,10% 65%);border:2px solid #b4a67c;background:radial-gradient(ellipse,#1b1b1c 45%,#aea68d 48%,#46443d 62%,#c7be9e 65%,#312d26 69%);}
+.oprpg-native .op-classic-sheet .op-classic-defense input {font:bold 28px Arial,sans-serif;color:#fff;}
+.oprpg-native .op-classic-sheet .op-classic-defense small{display:none;}
+.oprpg-native .op-classic-sheet .op-classic-resource {margin-bottom:9px;}
+.oprpg-native .op-classic-sheet .op-classic-resource h3 {font-weight:bold;font-size:9px;letter-spacing:0;color:#d8c68b;}
+.oprpg-native .op-classic-sheet .op-classic-resource>header {margin-bottom:3px;}
+.oprpg-native .op-classic-sheet .op-classic-resource .op-meter {border:1px solid #c9b776;background:#080808;border-radius:4px;height:32px;}
+.oprpg-native .op-classic-sheet .op-classic-resource .op-meter>label {justify-content:start;padding-left:6px;font-size:15px;}
+.oprpg-native .op-classic-sheet .op-classic-resource .op-meter input {width:32px;text-align:left;font-weight:bold;}
+.oprpg-native .op-classic-sheet .op-meter-power {box-shadow:0 0 8px #399cc077;}
+.oprpg-native .op-classic-sheet .op-meter-power>span {background:linear-gradient(90deg,#1f6fae,#46a6d8);}
+.oprpg-native .op-classic-sheet .op-ability-emblem {height:72px;min-height:72px;width:68px;gap:1px;justify-content:center;}
+.oprpg-native .op-classic-sheet .op-ability-emblem::before {border:0;border-radius:0;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);background:#8a6820;}
+.oprpg-native .op-classic-sheet .op-ability-emblem::after {content:"";position:absolute;inset:2px;z-index:1;background:linear-gradient(160deg,#211b27,#14101c);clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);}
+.oprpg-native .op-classic-sheet .op-ability-emblem>button,.oprpg-native .op-classic-sheet .op-ability-emblem>label,.oprpg-native .op-classic-sheet .op-ability-emblem>strong {z-index:2;}
+.oprpg-native .op-classic-sheet .op-ability-emblem>button {font-size:10px;font-weight:bold;padding:0;min-height:14px;color:#ead395;}
+.oprpg-native .op-classic-sheet .op-ability-emblem>strong {font:bold 14px Arial,sans-serif;color:#d6b563;line-height:18px;}
+.oprpg-native .op-classic-sheet .op-ability-emblem input {height:16px;border:0;background:transparent;color:#ece8f0;font-weight:bold;}
+.oprpg-native .op-classic-sheet .op-attributes {top:146px;gap:22px;}
+.oprpg-native .op-classic-sheet .op-card {border:2px solid #8a6820;border-radius:13px;background:#170f1d;box-shadow:0 0 4px #e3b53c38;outline:1px solid #6c501e;outline-offset:3px;}
+.oprpg-native .op-classic-sheet .op-card::before {content:"";position:absolute;inset:4px;border:1px solid #70531f;border-radius:8px;pointer-events:none;}
+.oprpg-native .op-classic-sheet .op-card>h3 {border:0;color:#f1d27a;font-size:11px;padding-bottom:5px;}
+.oprpg-native .op-classic-sheet .op-card>h3 i {color:#ce4838;margin-right:5px;}
+.oprpg-native .op-classic-sheet .op-skills li {grid-template-columns:12px 24px minmax(0,1fr) 25px 23px 16px;gap:4px;padding:5px 0;border-bottom:1px dotted #4d3f4c;font-size:11px;}
+.oprpg-native .op-classic-sheet .op-skills .op-skill-separator {display:block;border:0;padding:12px 0 8px;color:#d7be79;font-weight:bold;font-size:12px;letter-spacing:.6px;text-transform:uppercase;}
+.oprpg-native .op-skill-abbreviation {font-size:10px;color:#d7be79;font-weight:bold;}
+.oprpg-native .op-classic-sheet .op-skills .op-skill-config {opacity:0;}
+.oprpg-native .op-classic-sheet .op-skills li:hover .op-skill-config,.oprpg-native .op-classic-sheet .op-skills li:focus-within .op-skill-config {opacity:1;}
+.oprpg-native .op-classic-sheet .op-saves ul {display:grid;grid-template-columns:1fr 1fr;gap:5px;}
+.oprpg-native .op-classic-sheet .op-saves li {border:0;padding:3px 0;}
+.oprpg-native .op-classic-sheet .op-saves li>button {font-weight:bold;font-size:11px;}
+.oprpg-native .op-classic-sheet .op-saves li>strong {font-weight:bold;}
+.oprpg-native .op-classic-sheet .op-saves:has(input[name$="saveOverride"]) ul{grid-template-columns:1fr;}
+.oprpg-native .op-classic-sheet .op-identity-pills>div {border-radius:3px;}
+.oprpg-native .op-classic-sheet .op-header-actions {right:132px;bottom:72px;}
+.oprpg-native .op-classic-sheet .op-header-actions button {border-radius:4px;background:#080808;color:#d8c68b;}
+.oprpg-native .op-defense-row {display:flex;justify-content:center;align-items:center;gap:8px;}
+.oprpg-native .op-exhaustion-pips {display:flex;gap:5px;margin-top:15px;}
+.oprpg-native .op-exhaustion-pips button {width:15px;height:15px;min-height:15px;padding:0;border:2px solid #cebc80;border-radius:50%;background:transparent;}
+.oprpg-native .op-exhaustion-pips button[aria-pressed=true] {background:#cebc80;box-shadow:inset 0 0 0 2px #26272b;}
+.oprpg-native .op-favorites {background:#100c09;padding:14px 8px;margin-top:8px;}
+.oprpg-native .op-favorites h3 {font:bold 11px Arial,sans-serif;text-transform:uppercase;color:#d6be70;border-bottom:1px solid #ad8b48;padding-bottom:5px;margin:0;}
+.oprpg-native .op-empty-favorite {border:2px dashed #4c4137;padding:15px 3px;text-align:center;color:#73685b;font-size:10px;text-transform:uppercase;}
+.oprpg-native .op-favorites li {display:flex;gap:3px;align-items:center;}
+.oprpg-native .op-favorites li button {background:transparent;border:0;font-size:11px;padding:4px;min-height:24px;}
+/* Controles do core preservam sua fonte de ícones; estilos da ficha não vazam para o frame. */
+.oprpg-native .window-header .header-control {width:26px;height:26px;min-height:26px;padding:0;border:0;border-radius:3px;background:transparent;font-family:var(--font-awesome,"Font Awesome 6 Pro");font-size:14px;line-height:26px;}
+.oprpg-native .window-header .header-control i {font-family:var(--font-awesome,"Font Awesome 6 Pro");}
+.oprpg-native.op-document-sheet .window-header .window-title {font-size:0;color:transparent;flex:1;}
+.oprpg-native.op-document-sheet .window-header .window-icon {display:none;}
+.oprpg-native .window-header .op-edit-mode {order:-1;background:#100b17;color:#dfc777;}
+.oprpg-native .window-header .op-edit-mode[aria-pressed=true] {background:#453623;}
+.oprpg-native .op-classic-sheet :is(.op-skills,.op-saves) input[type=checkbox] {appearance:none;display:inline-block;flex:0 0 10px;width:10px;height:10px;min-width:10px;min-height:10px;margin:0;padding:0;border:1px solid #baa15b;border-radius:50%;background:transparent;box-shadow:none;vertical-align:middle;}
+.oprpg-native .op-classic-sheet :is(.op-skills,.op-saves) input[type=checkbox]::before,.oprpg-native .op-classic-sheet :is(.op-skills,.op-saves) input[type=checkbox]::after {content:none;display:none;}
+.oprpg-native .op-classic-sheet :is(.op-skills,.op-saves) input[type=checkbox]:checked {background:#baa15b;box-shadow:inset 0 0 0 2px #170f1d;}
+.oprpg-native .op-classic-sheet :is(.op-skills,.op-saves) input[type=checkbox]:disabled {opacity:1;}
+.oprpg-native .op-classic-sheet .op-portrait {height:230px;aspect-ratio:1;}
+.oprpg-native .op-classic-sheet .op-portrait img {object-fit:contain;object-position:center;background:#26272b;}
+.oprpg-native .op-classic-sheet .op-portrait-switch {left:6px;right:6px;width:calc(100% - 12px);height:30px;font-size:9px;}
+.oprpg-native .op-classic-sheet .op-saves li>button {min-width:0;line-height:1.3;padding:3px 2px;}
+.oprpg-native .op-classic-sheet .op-saves li>input[type=number] {min-width:0;}
+.oprpg-native .op-classic-sheet :is(.op-ability-emblem,.op-classic-resource) input:disabled {opacity:1;color:inherit;}
+.oprpg-native .op-body .op-checkbox input[type=checkbox] {appearance:auto;min-height:14px;width:14px;height:14px;padding:0;margin:0;accent-color:#d3b86a;}
+.oprpg-native .op-body .op-checkbox input[type=checkbox]::before,.oprpg-native .op-body .op-checkbox input[type=checkbox]::after {content:none;display:none;}
+.oprpg-native .window-header .header-control.fa-solid {font-weight:900;}
+.oprpg-native .window-header .header-control.fa-regular {font-weight:400;}
+
+.oprpg-native.op-dialog .window-content {padding:16px;}.oprpg-native.op-dialog .window-title {font:14px Arial,sans-serif;color:var(--op-gold-light);}.oprpg-native.op-dialog .window-header .header-control {font-family:var(--font-awesome);}

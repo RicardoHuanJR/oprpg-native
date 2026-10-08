@@ -3,6 +3,7 @@ import {SKILLS,DAMAGE_TYPES} from "./engine.mjs";
 import {damageActor,healActor,grantTemporary,spendHitDie,startLongRest,finishLongRest,finishShortRest,rollDamage,useActivity,activityFor} from "./services.mjs";
 import {EFFECT_FIELDS,effectChange} from "./effect-fields.mjs";
 import {awardAmbition,learnHakiTalent} from "./haki.mjs";
+import {actorNumbers} from "./actor-numbers.mjs";
 const {HandlebarsApplicationMixin} = foundry.applications.api;
 const {ActorSheetV2, ItemSheetV2} = foundry.applications.sheets;
 const guarded = handler => async function (...args) {
@@ -10,16 +11,28 @@ const guarded = handler => async function (...args) {
 };
 const selectOptions = (map, selected) => Object.entries(map).map(([value, label]) => ({value, label, selected: value === selected}));
 const escape=value=>foundry.utils.escapeHTML(String(value));
-const dialog=()=>foundry.applications.api.DialogV2;
+const dialog=()=>Object.fromEntries(['prompt','confirm'].map(method=>[method,options=>foundry.applications.api.DialogV2[method]({...options,classes:[...(options.classes??[]),'oprpg-native','op-dialog']})]));
+function editToggle(sheet,context,owner) {
+ const header=sheet.element.querySelector('.window-header');if(!header||!owner)return;
+ let toggle=header.querySelector('[data-action="toggleEditMode"]');
+ if(!toggle){toggle=document.createElement('button');toggle.type='button';toggle.className='header-control op-edit-mode';toggle.dataset.action='toggleEditMode';toggle.setAttribute('aria-label','Alternar edição da ficha');toggle.innerHTML='<i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>';header.prepend(toggle);}
+ toggle.title=context.editable?'Concluir edição':'Editar ficha';toggle.setAttribute('aria-pressed',String(context.editable));
+}
 async function amountDialog(title,extra="") {
   return dialog().prompt({window:{title},content:`<label>Quantidade <input name="amount" type="number" min="0" step="1" value="0" required></label>${extra}`,ok:{callback:(_event,_button,app)=>({amount:Number(app.form.elements.amount.value),form:app.form})}});
 }
 
 export class OPRPGActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   static DEFAULT_OPTIONS = {
-    classes: ["oprpg-native"], tag: "form", position: {width: 1080, height: 830}, window: {resizable: true},
+    classes: ["oprpg-native","op-document-sheet"], tag: "form", position: {width: 1080, height: 830}, window: {resizable: true},
     form: {submitOnChange: true, closeOnSubmit: false},
     actions: {
+      toggleSidebar:guarded(function(){this.sidebarCollapsed=!this.sidebarCollapsed;return this.render({force:true});}),
+      toggleEditMode:guarded(function(){if(!this.actor.isOwner)return;this.editMode=this.editMode===false;return this.render({force:true});}),
+      setExhaustion:guarded(function(_event,target){if(!this.actor.isOwner)throw new Error("Sem permissão.");const level=Number(target.dataset.level);if(!Number.isInteger(level)||level<1||level>6)throw new Error("Nível de exaustão inválido.");return this.actor.update({"system.exhaustion":level===this.actor.system.exhaustion?level-1:level});}),
+      toggleFavorite:guarded(function(_event,target){if(!this.actor.isOwner)throw new Error("Sem permissão.");const item=this.actor.items.get(target.dataset.itemId);if(!item)throw new Error("Conteúdo indisponível.");const favorites=this.actor.system.favorites??[];return this.actor.update({"system.favorites":favorites.includes(item.id)?favorites.filter(id=>id!==item.id):[...favorites,item.id]});}),
+      chooseHeaderArt:guarded(function(){if(!this.actor.isOwner)throw new Error("Sem permissão.");return new foundry.applications.apps.FilePicker.implementation({type:"image",current:this.actor.system.appearance.wallpaper,callback:path=>this.actor.update({"system.appearance.wallpaper":path})}).render({force:true});}),
+      openPowers:guarded(function(){if(this.actor.type==="ship")return;this.activeTab="powers";return this.render({force:true});}),
       selectTab: guarded(function (event, target) {
         const tab = target.dataset.tab;
         if (!SHEET_TABS.some(item=>item.id===tab)) return;
@@ -29,6 +42,12 @@ export class OPRPGActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       }),
       rollAttribute: guarded(function (event, target) { return this.actor.rollAttribute(target.dataset.attribute, {save: target.dataset.save === "true", advantage: event.shiftKey, disadvantage: event.altKey}); }),
       rollSkill:guarded(function(event,target){return this.actor.rollSkill(target.dataset.skill,{advantage:event.shiftKey,disadvantage:event.altKey});}),
+      configureResources:guarded(async function(){
+        if(!this.actor.isOwner)throw new Error("Sem permissão de edição.");
+        const system=this.actor.system;
+        const chosen=await dialog().prompt({window:{title:"Configurar PV e PP"},content:`<label>PV máximos<input name="hp" type="number" min="0" value="${system.vitality.max}" required></label><label>PP máximos (vazio: ${this.actor.type==="npc"?"sem máximo informado":"4 × nível"})<input name="pp" type="number" min="0" value="${system.power.maxOverride??""}"></label><label>PV negativos<input name="negative" type="number" min="0" value="${system.vitality.negative}" required></label>`,ok:{callback:(_e,_b,app)=>{const form=app.form.elements;return {"system.vitality.max":Number(form.hp.value),"system.power.maxOverride":form.pp.value===""?null:Number(form.pp.value),"system.vitality.negative":Number(form.negative.value)};}}});
+        if(chosen)await this.actor.update(chosen);
+      }),
       useItem:guarded(async function(event,target){
         if(this._using)return;this._using=true;
         try{const item=this.actor.items.get(target.dataset.itemId);if(!item?.system.activity)throw new Error("Este conteúdo não possui atividade.");
@@ -99,25 +118,43 @@ export class OPRPGActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     }
   };
   static PARTS = {body: {template: "systems/oprpg-native/templates/actor-expanded.hbs",templates:["systems/oprpg-native/templates/groups.hbs"], scrollable: [""]}};
+  async _onRender(context,options) {
+    await super._onRender(context,options);
+    editToggle(this,context,this.actor.isOwner);
+    for(const field of this.element.querySelectorAll('.op-body input,.op-body select,.op-body textarea,.op-sidebar input,.op-sidebar select,.op-sidebar textarea'))field.disabled=!context.editable;
+    for(const button of this.element.querySelectorAll('[data-action="rollAttribute"],[data-action="rollSkill"],[data-action="useItem"]'))button.disabled=!context.canUse;
+    for(const portrait of this.element.querySelectorAll('.op-portrait img[data-fallback]')) {
+      const fallback=()=>{if(portrait.dataset.fallbackUsed)return;portrait.dataset.fallbackUsed="true";portrait.src=portrait.dataset.fallback;};
+      portrait.addEventListener("error",fallback,{once:true});
+      if(portrait.complete&&!portrait.naturalWidth)fallback();
+    }
+  }
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
     const system = this.actor.system;
+    const numbers=this.actor.type==="ship"?null:actorNumbers(system,this.actor.type);
     const showAssistant = game.settings.get("oprpg-native", "creationAssistant") && this.actor.type === "character";
     if ((this.activeTab === "creation" && !showAssistant)||(this.actor.type==="ship"&&!['details','inventory','effects'].includes(this.activeTab))) this.activeTab = "details";
     const tab = this.activeTab ?? "details";
     const groups=Object.entries(CATEGORIES).filter(([type])=>type!=="species"&&(type!=="legendary"||(game.user.isGM&&this.actor.type==="npc"))).map(([type,label])=>({type,label,items:this.actor.items.filter(item=>item.type===type).map(item=>({id:item.id,img:item.img,name:item.name,grade:item.type==="technique"?item.system.grade:null,homebrew:item.system.origin==="homebrew",quantity:item.system.equipment?.quantity,weight:item.system.equipment?.weight,equipped:item.system.equipment?.equipped,isEquipment:["weapon","equipment"].includes(item.type),canUse:Boolean(item.system.activity)&&item.system.activity.activation!=="passive",activation:ACTIVATIONS[item.system.activity?.activation],cost:item.system.activity?.powerCost}))}));
     const groupList=types=>groups.filter(group=>types.includes(group.type));
-    return {...context, actor: this.actor, system, editable: this.actor.isOwner, isShip:this.actor.type==="ship", isNPC: this.actor.type === "npc", isGM: game.user.isGM,
-      portraitImage:system.appearance?.portraitMode==="token"?(this.actor.token?.texture?.src??this.actor.prototypeToken?.texture?.src??this.actor.img):this.actor.img,
+    return {...context, actor: this.actor, system, editable: this.actor.isOwner&&this.editMode!==false, canUse:this.actor.isOwner, isShip:this.actor.type==="ship", isNPC: this.actor.type === "npc", isGM: game.user.isGM,
+      portraitImage:system.appearance?.portraitMode==="token"?(this.actor.token?.texture?.src??this.actor.prototypeToken?.texture?.src??this.actor.img):(this.actor.img==="icons/svg/mystery-man.svg"?`systems/oprpg-native/theme/${this.actor.type==="npc"?"npc":"character"}.svg`:this.actor.img),
       tokenPortrait:system.appearance?.portraitMode==="token",isCharacter:this.actor.type==="character",
+      sidebarCollapsed:Boolean(this.sidebarCollapsed),
+      exhaustionLeft:[1,2,3].map(level=>({level,filled:level<=system.exhaustion})),exhaustionRight:[4,5,6].map(level=>({level,filled:level<=system.exhaustion})),
+      favorites:this.actor.items.filter(item=>(system.favorites??[]).includes(item.id)).map(item=>({id:item.id,name:item.name,img:item.img,canUse:Boolean(item.system.activity)&&item.system.activity.activation!=="passive"})),
+      headerArt:encodeURI(system.appearance?.wallpaper||"/systems/oprpg-native/theme/header.webp").replaceAll("'","%27").replaceAll('"',"%22").replaceAll("(","%28").replaceAll(")","%29"),
+      initiativeBonus:numbers?.initiative??0,
       healthPercent:Math.max(0,Math.min(100,100*system.vitality.value/(system.vitality.max||1))),powerPercent:system.power?Math.max(0,Math.min(100,100*system.power.value/(system.power.max||1))):0,
       showAssistant, detailsActive: tab === "details", contentActive: tab === "content", creationActive: tab === "creation",
       tabs:SHEET_TABS.filter(item=>(item.id!=="creation"||showAssistant)&&(this.actor.type!=="ship"||["details","inventory","effects"].includes(item.id))).map(item=>({...item,active:item.id===tab})),
       active:Object.fromEntries(SHEET_TABS.map(item=>[item.id,item.id===tab])),
-      attributes: system.attributes?Object.entries(ATTRIBUTES).map(([id, label]) => ({id, label, ...system.attributes[id], modifier: system.attributes[id].modifier})):[],
+      attributes: numbers?['strength','dexterity','constitution','will','wisdom','presence'].map(id=>({id,...numbers.attributes[id],abbreviation:{strength:"FOR",dexterity:"DES",constitution:"CON",wisdom:"SAB",presence:"PRE",will:"VON"}[id]})):[],
       skills:system.skills?Object.entries(SKILLS).map(([id,config])=>({id,...config,...system.skills[id]})):[],
+      skillGroups:system.skills?['strength','dexterity','will','wisdom','presence'].map(attribute=>({label:ATTRIBUTES[attribute],skills:Object.entries(SKILLS).filter(([,config])=>config.attribute===attribute).map(([id,config])=>({id,...config,...system.skills[id],abbreviation:{strength:"FOR",dexterity:"DES",wisdom:"SAB",presence:"PRE",will:"VON"}[attribute]}))})):[],
       checklist: this.actor.type==="ship"?[]:creationChecklist(system),
-      inventoryGroups:groupList(["weapon","equipment"]),featureGroups:groupList(["feature","style","personalization","legendary"]),techniqueGroups:groupList(["technique","auxiliary"]),trainingGroups:groupList(["training","profession"]),powerGroups:groupList(["hakiTalent","fruit"]),
+      inventoryGroups:groupList(["weapon","equipment"]),featureGroups:groupList(["feature","style","personalization","legendary"]),techniqueGroups:groupList(["technique","auxiliary"]),trainingGroups:groupList(["training"]),professionGroups:groupList(["profession"]),powerGroups:groupList(["hakiTalent","fruit"]),
       effects:(this.actor.effects??[]).map(effect=>({id:effect.id,name:effect.name,img:effect.img,disabled:effect.disabled,duration:effect.duration?.label??""})),
       species: game.items.filter(item => item.type === "species" && item.testUserPermission(game.user, "OBSERVER")).map(item => ({id: item.id, name: item.name, homebrew: item.system.origin === "homebrew"})),
       groups
@@ -132,9 +169,10 @@ export class OPRPGActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
 export class OPRPGItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
   static DEFAULT_OPTIONS = {
-    classes: ["oprpg-native"], tag: "form", position: {width: 610, height: 730}, window: {resizable: true},
+    classes: ["oprpg-native","op-document-sheet"], tag: "form", position: {width: 610, height: 730}, window: {resizable: true},
     form: {submitOnChange: true, closeOnSubmit: false},
     actions: {
+      toggleEditMode:guarded(function(){if(!this.item.isOwner)return;this.editMode=this.editMode===false;return this.render({force:true});}),
       learnHakiTalent:guarded(function(){return learnHakiTalent(this.item);}),
       selectVariant:guarded(function(event,target){this.selectedVariant=target.dataset.variantId||null;return this.render({force:true});}),
       addVariant:guarded(async function(){
@@ -165,6 +203,7 @@ export class OPRPGItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
     })}
   };
   static PARTS = {body: {template: "systems/oprpg-native/templates/item.hbs", scrollable: [""]}};
+  async _onRender(context,options){await super._onRender(context,options);editToggle(this,context,this.item.isOwner);for(const field of this.element.querySelectorAll('.op-body input,.op-body select,.op-body textarea'))field.disabled=!context.editable;}
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
     const source=this.item.system;
@@ -172,7 +211,7 @@ export class OPRPGItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
     if(variantIndex<0)this.selectedVariant=null;
     const selected=source.activity?activityFor(this.item,this.selectedVariant):null;
     const system={...source,activity:selected?.activity??source.activity,resolution:selected?.resolution??source.resolution};
-    return {...context, item: this.item, system, editable: this.item.isOwner, category: CATEGORIES[this.item.type],
+    return {...context, item: this.item, system, editable: this.item.isOwner&&this.editMode!==false, category: CATEGORIES[this.item.type],
       isSpecies: this.item.type === "species", isTechnique: this.item.type === "technique", hasActivity: Boolean(system.activity),
       isHakiTalent:this.item.type==="hakiTalent",hakiFocus:selectOptions({armament:"Armamento",observation:"Observação",king:"Rei"},system.hakiTalent?.focus),hakiStages:selectOptions({Latente:"Latente",Inexperiente:"Inexperiente",Treinado:"Treinado",Perito:"Perito"},system.hakiTalent?.minimumStage),
       canRoll: Boolean(this.item.actor?.isOwner && system.activity),isProgression:this.item.type==="style",isProfession:this.item.type==="profession",isEquipment:["weapon","equipment"].includes(this.item.type),
