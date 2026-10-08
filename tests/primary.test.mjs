@@ -85,3 +85,8 @@ test("manifesto com compatibilidade explícita para seleção do sistema e arqui
   const lang=JSON.parse(await readFile(new URL("lang/pt-BR.json",root),"utf8"));
   for(const type of Object.keys(manifest.documentTypes.Item)) assert.ok(lang.TYPES.Item[type]);
 });
+test("salvaguarda do bloco usa bônus informado uma vez e conserva penalidade de exaustão",async()=>{
+  const actor=new OPRPGActor();actor.system=new models.NPCData();actor.isOwner=true;actor.system.exhaustion=2;
+  actor.system.attributes.strength.saveProficient=true;actor.system.attributes.strength.saveOverride=7;actor.system.prepareDerivedData();
+  await actor.rollAttribute("strength",{save:true});assert.equal(messages.at(-1).formula,"1d20 + 3 + 0");
+});

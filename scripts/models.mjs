@@ -1,5 +1,6 @@
 import {ATTRIBUTES, attributeModifier, proficiencyBonus} from "./rules.mjs";
 import {SKILLS, hakiStage} from "./engine.mjs";
+import {conditionSet,movementFromConditions} from "./conditions.mjs";
 const f = foundry.data.fields;
 const number = (initial = 0, options = {}) => new f.NumberField({required: true, nullable: false, integer: true, initial, ...options});
 const string = (initial = "", options = {}) => new f.StringField({required: true, nullable: false, initial, ...options});
@@ -19,7 +20,7 @@ export class CharacterData extends foundry.abstract.TypeDataModel {
       identity: schema({combatStyle: string(), profession: string(), biography: string(), species: schema({uuid: string(), name: string(), origin: string("homebrew", {choices: ["official", "homebrew"]}), version: string(), traits: string()})}),
       progression: schema({level: number(1, {min: 1, max: 20})}),
       experience: number(0,{min:0}),
-      attributes: schema(Object.fromEntries(Object.keys(ATTRIBUTES).map(id => [id, schema({base: number(10, {min: 1}), saveProficient: boolean()})]))),
+      attributes: schema(Object.fromEntries(Object.keys(ATTRIBUTES).map(id => [id, schema({base: number(10, {min: 1}), saveProficient: boolean(),saveOverride:nullableNumber()})]))),
       vitality: schema({value: number(0, {min: 0}), max: number(0, {min: 0}), temporary: number(0, {min: 0}), negative: number(0, {min: 0})}),
       power: schema({value: number(0, {min: 0}), maxOverride: new f.NumberField({required: true, nullable: true, integer: true, min: 0, initial: null})}),
       defense: schema({rating: number(10)}),
@@ -50,14 +51,12 @@ export class CharacterData extends foundry.abstract.TypeDataModel {
     for(const [id,skill] of Object.entries(this.skills)) {
       const attribute=this.attributes[SKILLS[id].attribute];
       const proficient=skill.proficient||(id==="haki"&&["Treinado","Perito"].includes(this.haki.stage));
-      skill.total=skill.override ?? attribute.modifier+(proficient?Math.floor(this.proficiency.bonus*skill.multiplier):0)+skill.bonus-2*this.exhaustion;
+      skill.total=(skill.override ?? attribute.modifier+(proficient?Math.floor(this.proficiency.bonus*skill.multiplier):0)+skill.bonus)-2*this.exhaustion;
       skill.passive=10+skill.total;
     }
-    this.haki.spent=this.haki.armament+this.haki.observation+this.haki.king;
-    this.haki.stage=hakiStage(this.haki.spent);
     this.inventoryWeight=(this.parent?.items??[]).reduce((sum,item)=>sum+(item.system.equipment?.weight??0)*(item.system.equipment?.quantity??0),0);
     this.carryingCapacity=10*this.attributes.strength.base;
-    this.effectiveMovement=Math.max(0,this.movement.distance-1.5*this.exhaustion);
+    this.effectiveMovement=movementFromConditions(Math.max(0,this.movement.distance-1.5*this.exhaustion),conditionSet(this.parent?.statuses,this.vitality));
   }
   static migrateData(source) { if(source.schemaVersion===1) source.schemaVersion=2; return super.migrateData(source); }
 }
@@ -68,12 +67,16 @@ export class NPCData extends CharacterData {
     fields.proficiencyOverride = number(2, {min: 0});
     fields.legendaryActions = resource();
     fields.challenge=string("0");fields.rewardXP=number(0,{min:0});fields.saveDifficulty=number(10);fields.senses=string();
+    fields.power.fields.maxOverride=new f.NumberField({required:true,nullable:true,integer:true,min:0,initial:0});
+    fields.vitalityState.fields.deathPolicy=string("npc",{choices:["player","npc"]});
     return fields;
   }
   prepareDerivedData() {
     super.prepareDerivedData(); this.proficiency.bonus = this.proficiencyOverride;
+    this.power.max=this.power.maxOverride??0;
     for(const [id,skill] of Object.entries(this.skills)) {
-      skill.total=skill.override ?? this.attributes[SKILLS[id].attribute].modifier+(skill.proficient?Math.floor(this.proficiencyOverride*skill.multiplier):0)+skill.bonus-2*this.exhaustion;
+      const proficient=skill.proficient||(id==="haki"&&["Treinado","Perito"].includes(this.haki.stage));
+      skill.total=(skill.override ?? this.attributes[SKILLS[id].attribute].modifier+(proficient?Math.floor(this.proficiencyOverride*skill.multiplier):0)+skill.bonus)-2*this.exhaustion;
       skill.passive=10+skill.total;
     }
   }
@@ -95,6 +98,9 @@ export class SpeciesData extends ContentData {
 }
 export class ProgressionData extends ContentData {
   static defineSchema(){return {...super.defineSchema(),hitDie:number(8,{choices:[6,8,10,12]}),primaryAttribute:string("strength",{choices:Object.keys(ATTRIBUTES)}),skillProficiencies:list(),saveProficiencies:list()};}
+}
+export class ProfessionData extends ContentData {
+  static defineSchema(){return {...super.defineSchema(),profession:schema({rank:string("professional",{choices:["professional","specialist","master","grandMaster"]}),recognition:string(),tools:list()})};}
 }
 export class ActivityData extends ContentData {
   static defineSchema() {

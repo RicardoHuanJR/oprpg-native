@@ -29,6 +29,22 @@ export class OPRPGActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       }),
       rollAttribute: guarded(function (event, target) { return this.actor.rollAttribute(target.dataset.attribute, {save: target.dataset.save === "true", advantage: event.shiftKey, disadvantage: event.altKey}); }),
       rollSkill:guarded(function(event,target){return this.actor.rollSkill(target.dataset.skill,{advantage:event.shiftKey,disadvantage:event.altKey});}),
+      useItem:guarded(async function(event,target){
+        if(this._using)return;this._using=true;
+        try{const item=this.actor.items.get(target.dataset.itemId);if(!item?.system.activity)throw new Error("Este conteúdo não possui atividade.");
+          const result=await useActivity(item,{requestId:foundry.utils.randomID(),advantage:event.shiftKey,disadvantage:event.altKey});
+          if(result.deliveryError)ui.notifications.warn("Recursos confirmados, mas o cartão falhou. Não repita o uso.");return result;
+        }finally{this._using=false;}
+      }),
+      configureSkill:guarded(async function(_event,target){
+        if(!this.actor.isOwner)throw new Error("Sem permissão de edição.");
+        const id=target.dataset.skill;if(!Object.hasOwn(SKILLS,id))throw new Error("Perícia desconhecida.");
+        const skill=this.actor.system.skills[id];
+        const options=selectOptions({0.5:"Metade",1:"Normal",2:"Dobro"},String(skill.multiplier)).map(option=>`<option value="${option.value}" ${option.selected?"selected":""}>${option.label}</option>`).join("");
+        const chosen=await dialog().prompt({window:{title:`Configurar ${SKILLS[id].label}`},content:`<p>Atributo: ${ATTRIBUTES[SKILLS[id].attribute]}. Exaustão entra automaticamente na rolagem.</p><label>Aplicação da proficiência<select name="multiplier">${options}</select></label><label>Bônus da característica<input name="bonus" type="number" value="${skill.bonus}" step="1"></label><label>Bônus total informado pela fonte (vazio: calcular)<input name="override" type="number" value="${skill.override??""}" step="1"></label>`,ok:{callback:(_e,_b,app)=>{const form=app.form.elements;return {multiplier:Number(form.multiplier.value),bonus:Number(form.bonus.value),override:form.override.value===""?null:Number(form.override.value)};}}});
+        if(chosen)await this.actor.update(Object.fromEntries(Object.entries(chosen).map(([key,value])=>[`system.skills.${id}.${key}`,value])));
+      }),
+      togglePortrait:guarded(function(){if(!this.actor.isOwner)throw new Error("Sem permissão.");return this.actor.update({"system.appearance.portraitMode":this.actor.system.appearance.portraitMode==="token"?"actor":"token"});}),
       damage:guarded(async function(){
         const types=Object.entries(DAMAGE_TYPES).map(([id,label])=>`<option value="${id}">${label}</option>`).join("");
         const choice=await amountDialog("Aplicar dano",`<label>Tipo<select name="type">${types}</select></label><label>Redução da fonte<input name="reduction" type="number" min="0" value="0"></label>`);
@@ -48,7 +64,7 @@ export class OPRPGActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       addResource:guarded(async function(){if(!this.actor.isOwner)throw new Error("Sem permissão.");await this.actor.update({"system.resources":[...this.actor.system.resources.map(r=>({...r})),{id:foundry.utils.randomID(),name:"Novo recurso",value:0,max:0,recovery:"none",source:""}]});}),
       awardAmbition:guarded(async function(){const choice=await amountDialog("Conceder Pontos de Ambição");if(choice){const result=await awardAmbition(this.actor,choice.amount);ui.notifications.info(`${result.awarded} PA concedidos; ${result.lost} excedentes ao limite.`);}}),
       deleteItem:guarded(async function(event,target){if(!this.actor.isOwner)throw new Error("Sem permissão.");const item=this.actor.items.get(target.dataset.itemId);if(item&&await dialog().confirm({window:{title:"Remover conteúdo"},content:`<p>Remover ${escape(item.name)} desta ficha?</p>`}))await item.delete();}),
-      toggleEquipment:guarded(function(event,target){const item=this.actor.items.get(target.dataset.itemId);if(!item?.isOwner)throw new Error("Sem permissão.");return item.update({"system.equipment.equipped":!item.system.equipment.equipped});}),
+      toggleEquipment:guarded(function(event,target){const item=this.actor.items.get(target.dataset.itemId);if(!item?.isOwner)throw new Error("Sem permissão.");if(!["weapon","equipment"].includes(item.type))throw new Error("Este conteúdo não é equipamento.");return item.update({"system.equipment.equipped":!item.system.equipment.equipped});}),
       createEffect:guarded(async function(){
         if(!game.user.isGM)throw new Error("O mestre cria os modificadores nesta etapa.");
         const fields=EFFECT_FIELDS.map(field=>`<option value="${field.path}">${escape(field.label)}</option>`).join("");
@@ -87,11 +103,14 @@ export class OPRPGActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     const context = await super._prepareContext(options);
     const system = this.actor.system;
     const showAssistant = game.settings.get("oprpg-native", "creationAssistant") && this.actor.type === "character";
-    if (this.activeTab === "creation" && !showAssistant) this.activeTab = "details";
+    if ((this.activeTab === "creation" && !showAssistant)||(this.actor.type==="ship"&&!['details','inventory','effects'].includes(this.activeTab))) this.activeTab = "details";
     const tab = this.activeTab ?? "details";
-    const groups=Object.entries(CATEGORIES).filter(([type])=>type!=="species"&&(type!=="legendary"||(game.user.isGM&&this.actor.type==="npc"))).map(([type,label])=>({type,label,items:this.actor.items.filter(item=>item.type===type).map(item=>({id:item.id,img:item.img,name:item.name,grade:item.type==="technique"?item.system.grade:null,homebrew:item.system.origin==="homebrew",quantity:item.system.equipment?.quantity,weight:item.system.equipment?.weight,equipped:item.system.equipment?.equipped,cost:item.system.activity?.powerCost}))}));
+    const groups=Object.entries(CATEGORIES).filter(([type])=>type!=="species"&&(type!=="legendary"||(game.user.isGM&&this.actor.type==="npc"))).map(([type,label])=>({type,label,items:this.actor.items.filter(item=>item.type===type).map(item=>({id:item.id,img:item.img,name:item.name,grade:item.type==="technique"?item.system.grade:null,homebrew:item.system.origin==="homebrew",quantity:item.system.equipment?.quantity,weight:item.system.equipment?.weight,equipped:item.system.equipment?.equipped,isEquipment:["weapon","equipment"].includes(item.type),canUse:Boolean(item.system.activity)&&item.system.activity.activation!=="passive",activation:ACTIVATIONS[item.system.activity?.activation],cost:item.system.activity?.powerCost}))}));
     const groupList=types=>groups.filter(group=>types.includes(group.type));
     return {...context, actor: this.actor, system, editable: this.actor.isOwner, isShip:this.actor.type==="ship", isNPC: this.actor.type === "npc", isGM: game.user.isGM,
+      portraitImage:system.appearance?.portraitMode==="token"?(this.actor.token?.texture?.src??this.actor.prototypeToken?.texture?.src??this.actor.img):this.actor.img,
+      tokenPortrait:system.appearance?.portraitMode==="token",isCharacter:this.actor.type==="character",
+      healthPercent:Math.max(0,Math.min(100,100*system.vitality.value/(system.vitality.max||1))),powerPercent:system.power?Math.max(0,Math.min(100,100*system.power.value/(system.power.max||1))):0,
       showAssistant, detailsActive: tab === "details", contentActive: tab === "content", creationActive: tab === "creation",
       tabs:SHEET_TABS.filter(item=>(item.id!=="creation"||showAssistant)&&(this.actor.type!=="ship"||["details","inventory","effects"].includes(item.id))).map(item=>({...item,active:item.id===tab})),
       active:Object.fromEntries(SHEET_TABS.map(item=>[item.id,item.id===tab])),
@@ -156,7 +175,8 @@ export class OPRPGItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
     return {...context, item: this.item, system, editable: this.item.isOwner, category: CATEGORIES[this.item.type],
       isSpecies: this.item.type === "species", isTechnique: this.item.type === "technique", hasActivity: Boolean(system.activity),
       isHakiTalent:this.item.type==="hakiTalent",hakiFocus:selectOptions({armament:"Armamento",observation:"Observação",king:"Rei"},system.hakiTalent?.focus),hakiStages:selectOptions({Latente:"Latente",Inexperiente:"Inexperiente",Treinado:"Treinado",Perito:"Perito"},system.hakiTalent?.minimumStage),
-      canRoll: Boolean(this.item.actor?.isOwner && system.activity),isProgression:["style","profession"].includes(this.item.type),
+      canRoll: Boolean(this.item.actor?.isOwner && system.activity),isProgression:this.item.type==="style",isProfession:this.item.type==="profession",isEquipment:["weapon","equipment"].includes(this.item.type),
+      professionRanks:selectOptions({professional:"Profissional",specialist:"Especialista",master:"Mestre",grandMaster:"Grão-Mestre"},system.profession?.rank),
       activityPath:variantIndex<0?"system.activity":`system.variants.${variantIndex}.activity`,resolutionPath:variantIndex<0?"system.resolution":`system.variants.${variantIndex}.resolution`,
       variants:(source.variants??[]).map(variant=>({id:variant.id,name:variant.name,selected:variant.id===this.selectedVariant})),hasSelectedVariant:variantIndex>=0,
       variantNamePath:`system.variants.${variantIndex}.name`,variantLabel:variantIndex>=0?source.variants[variantIndex].name:"",

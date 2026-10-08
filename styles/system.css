@@ -75,6 +75,20 @@
 .oprpg-native .op-tabs-wide {flex-wrap:wrap;gap:0;padding:0 10px;}
 .oprpg-native .op-tabs-wide button {font-size:11px;padding:8px;min-height:36px;}
 .oprpg-native .op-skills li {display:grid;grid-template-columns:18px 1fr 26px 26px;align-items:center;gap:5px;padding:4px 0;border-bottom:1px solid var(--op-border);font-size:12px;}
+.oprpg-native .op-skills li {grid-template-columns:18px minmax(0,1fr) 30px 38px 24px;}
+.oprpg-native .op-skill-key {display:grid;grid-template-columns:1fr 30px 38px;padding-right:29px;gap:5px;color:var(--op-muted);font-size:10px;}
+.oprpg-native .op-skills .op-skill-config {padding:0;min-height:24px;text-align:center;color:var(--op-muted);}
+.oprpg-native .op-meter {height:9px;overflow:hidden;background:#090605;border:1px solid var(--op-border);border-radius:6px;margin:0 0 12px;}
+.oprpg-native .op-meter span {display:block;height:100%;}
+.oprpg-native .op-meter-health span {background:linear-gradient(90deg,#861f20,var(--op-red));}
+.oprpg-native .op-meter-power span {background:linear-gradient(90deg,#a37520,var(--op-gold));}
+.oprpg-native .op-portrait-switch {width:100%;margin:-6px 0 14px;}
+.oprpg-native .op-settings summary {cursor:pointer;color:var(--op-gold-light);padding:8px 0;font-size:12px;}
+.oprpg-native .op-settings[open] summary {margin-bottom:10px;}
+.oprpg-native .op-item-title {flex:1;min-width:0;}
+.oprpg-native .op-item-title button {width:100%;background:transparent;border:0;overflow-wrap:anywhere;}
+.oprpg-native .op-item-title small {display:block;color:var(--op-muted);font-size:10px;padding-left:10px;}
+.oprpg-native .op-item-group li > button {flex:0 0 auto;text-align:center;}
 .oprpg-native .op-skills input[type=checkbox] {width:14px;height:14px;}
 .oprpg-native .op-skills button {background:transparent;border:0;text-align:left;color:var(--op-text);}
 .oprpg-native .op-buttons {display:flex;flex-wrap:wrap;gap:5px;}
