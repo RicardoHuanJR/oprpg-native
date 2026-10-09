@@ -1,6 +1,8 @@
+import {finishChaseTurn} from './exploration.mjs';
 export class OPRPGCombat extends foundry.documents.Combat {
   async nextTurn() {
     if(!game.user.isGM||!this.started||!this.combatant?.actor)return super.nextTurn();
+    await finishChaseTurn(this.combatant.actor,this);
     const current=this.combatant;
     if(!this.turns.some(turn=>turn.id!==current.id&&(turn.actor?.system.legendaryActions?.max??0)>0))return super.nextTurn();
     await this.setFlag("oprpg-native","endTurnWindow",{round:this.round,turn:this.turn,actorUUID:current.actor.uuid});

@@ -1,46 +1,19 @@
-# OP RPG Nativo — 0.2.3 experimental
+# OP RPG Nativo 0.3.1
 
-Sistema independente para Foundry v14. Esta é uma etapa da reconstrução, ainda não a implementação completa. Não contém livros, imagens licenciadas ou compêndios do sistema original.
+Sistema experimental independente para Foundry v14.367. A atualização substitui a versão pública 0.2.3 no mesmo repositório.
 
-## Descanso e decisão do mestre
+Manifesto estável: https://raw.githubusercontent.com/RicardoHuanJR/oprpg-native/main/system.json
 
-O descanso longo iniciado com exaustão recupera metade dos PP máximos, somada ao saldo existente sem exceder o máximo, seguindo a escolha explícita do mestre pelo Jogador 2.1, página 36. A exaustão considerada é a registrada no início do descanso.
+Inclui fichas de personagem, inimigo, embarcação e itens, escolhas de progressão, Multiestilo opcional, espécies/antecedentes e conteúdo personalizado, treinamento condicionado, economia de ações, PP, mitigação tipada, expertises, concentração, efeitos com duração, exploração, dials e operações navais. Mantém as decisões da mesa: Constituição real nos PV por nível e recuperação de metade dos PP máximos no descanso longo iniciado com exaustão.
 
-Na ficha, inicie o descanso e avance o relógio do mundo em pelo menos oito horas antes de concluir. O personagem precisa começar com pelo menos 1 PV; os benefícios do descanso longo são limitados a uma vez a cada 24 horas. A recuperação também repõe PV, remove temporários e reduz a exaustão em um nível. Descanso curto exige 30 minutos antes de liberar os Dados de Vida.
+Nesta revisão: Electro/Sulong em ataques desarmados; exaustão própria da perseguição removida no descanso e resolução das complicações urbanas/naturais; âncora para ao fim do turno, com dano e teste para movimento forçado; Impact/Reject acima da capacidade são destruídos; tamanho mínimo, iniciativa e limite de ações de montarias controladas e resolução de quedas; orçamento de mastros, motores, leme, âncora, fortificação e kairoseki. Janelas e a ficha clássica usam apresentação própria.
 
-## Ficha com composição clássica
+Imagens pessoais existentes em `theme/classes` continuam sendo selecionadas conforme o estilo principal. As imagens do sistema antigo, fontes, livros e licenças pessoais não são redistribuídos. Instalações novas podem definir imagens no botão do cabeçalho. Nenhuma dependência de D&D, Nen, Jujutsu ou módulos externos é necessária.
 
-Cabeçalho amplo, nome em destaque, retrato em moldura, CR central, indicadores compactos de iniciativa/movimento/proficiência, números de PV/PP dentro das barras e atributos em emblemas. As configurações extensas ficam em janelas ou seções recolhidas. A organização segue a ficha usada na mesa; implementação própria, sem redistribuir seus arquivos ou imagens licenciados.
+## Limites desta versão
 
-NPC mantém valores do bloco e a profissão possui graduação própria, sem herdar DV de estilo. Perícias têm uma janela própria de configuração. Esta etapa altera o desenho e os controles da ficha; a reconstrução completa continua pendente.
+Continua experimental. As exceções individuais de profissões, formas Zoan e benefícios numéricos das origens mestiças precisam de configuração/revisão da fonte. Complicações e montarias têm resolução assistida pelo Narrador; posição de tokens, encontros escolhidos e consentimento são confirmados explicitamente. O orçamento naval não inclui cômodos e instalações; abastecimento e efetivo de motores exigem acompanhamento do Narrador. Dials não interceptam automaticamente ataques de outro cliente. Concorrência entre clientes ainda exige validação específica.
 
-## Implementações parciais
+114 testes de modelos, serviços e regressões passaram com os modelos reais do Foundry 14.367 e documentos/rolagens controlados. No mundo de teste, foram conferidos personagem, inimigo, embarcação, deslocamentos, progressão, edição de espécie personalizada, benefícios condicionais, navegação/armamento e configurações do sistema. Isso não equivale a certificar todas as regras dos três livros, todas as janelas ou todos os casos de multiplayer.
 
-- Fichas com retrato, paleta escura, vermelho/dourado e abas para inventário, características, técnicas, poderes, treinamento, efeitos, informações pessoais e criação.
-- Atributos, salvaguardas e perícias, com vantagem/desvantagem, proficiência e exaustão.
-- Aplicação manual de dano/cura/temporários e automação parcial de gastos de PP e usos.
-- Atividades alternativas nos itens; técnicas com grau e auxiliares sem grau.
-- Controle parcial de ações, reações e ações lendárias durante combate.
-- Registro de Haki com aquisição de talentos e distribuição de PA autorizada pelo mestre.
-- Espécies personalizadas e checklist de criação desativável, preservando os dados.
-- Campos de navios e efeitos próprios: ainda não representam automação completa dessas regras.
-
-## Limitações e verificação
-
-A reconstrução continua. Progressão e benefícios completos de espécies/estilos/profissões, resolução automática de alvos e salvaguardas, concentração, poderes de frutas, combate naval e autoridade entre vários clientes permanecem pendentes. Controle Cirúrgico é um registro por atividade. Compatibilidade com módulos será tratada depois.
-
-55 testes locais passaram, incluindo modelos e seleção do sistema com bibliotecas do core 14.367. A criação de mundo foi verificada no servidor isolado e os controles principais da ficha foram conferidos no Foundry 14.367. Isso não certifica todas as janelas ou uma sessão completa com vários jogadores; use um mundo de teste e módulos desativados. Preserve um backup antes de abrir dados anteriores, pois esta etapa acrescenta campos e tipos.
-
-## Instalação e atualizações
-
-O manifesto permanece sempre neste endereço: https://raw.githubusercontent.com/RicardoHuanJR/oprpg-native/main/system.json
-
-Use a verificação de atualização do Foundry. O pacote modifica somente `oprpg-native`; não substitua o sistema original nem altere o sistema de uma campanha existente. Após atualizar, reinicie o Foundry para carregar os novos arquivos.
-
-[Download 0.2.3](https://github.com/RicardoHuanJR/oprpg-native/releases/download/v0.2.3/oprpg-native-0.2.3.zip)
-
-## Revisão dos controles 0.2.3
-
-Corrige os círculos de proficiência, a fonte dos ícones do frame, o controle de edição, o enquadramento do retrato e os valores derivados de salvaguarda/iniciativa. O modo de uso preserva as rolagens sem liberar edição dos campos. Foram inventariados 303 templates, 44 estilos e 209 controladores do ZIP de referência; isso não significa que todas as janelas estão implementadas.
-
-As imagens pessoais do tema ficam apenas na instalação local. O pacote público usa o retrato padrão quando não há imagem pessoal disponível; a imagem do cabeçalho pode ser escolhida na ficha.
+Atualize pelo Foundry e reinicie o aplicativo. Teste em mundo separado; preserve o sistema e a campanha antigos.

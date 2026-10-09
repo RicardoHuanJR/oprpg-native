@@ -8,7 +8,7 @@ export function actorNumbers(system,type="character") {
     const source=system.attributes?.[id]??{};
     const base=finite(source.base,10);
     const modifier=finite(source.modifier,attributeModifier(base));
-    const save=(Number.isFinite(source.saveOverride)?source.saveOverride:modifier+(source.saveProficient?proficiency:0))-2*exhaustion;
+    const save=(Number.isFinite(source.saveOverride)?source.saveOverride:modifier+(source.saveProficient?Math.floor(proficiency*(source.saveMultiplier??1)):0))-2*exhaustion;
     return [id,{...source,base,modifier,label,saveTotal:save,signedModifier:modifier>=0?`+${modifier}`:String(modifier)}];
   }));
   return {attributes,proficiency,exhaustion,initiative:attributes.dexterity.modifier-2*exhaustion};

@@ -1,11 +1,11 @@
 {
   "id": "oprpg-native",
   "title": "OP RPG Nativo — Experimental",
-  "description": "Reconstrução experimental independente: fichas, espécies personalizadas e automações parciais de recursos e descanso. Sem conteúdo dos livros.",
-  "version": "0.2.3",
+  "description": "Sistema OP RPG independente para Foundry v14: ficha clássica, progressão com escolhas, multiestilo, raças e antecedentes, treinos condicionais e inventário. Experimental; regras específicas ainda exigem conferência.",
+  "version": "0.3.1",
   "url": "https://github.com/RicardoHuanJR/oprpg-native",
   "manifest": "https://raw.githubusercontent.com/RicardoHuanJR/oprpg-native/main/system.json",
-  "download": "https://github.com/RicardoHuanJR/oprpg-native/releases/download/v0.2.3/oprpg-native-0.2.3.zip",
+  "download": "https://github.com/RicardoHuanJR/oprpg-native/releases/download/v0.3.1/oprpg-native-0.3.1.zip",
   "compatibility": {
     "minimum": "14",
     "verified": "14.367",
@@ -16,7 +16,9 @@
   ],
   "styles": [
     "styles/system.css",
-    "styles/classic.css"
+    "styles/classic.css",
+    "styles/legacy-clean.css",
+    "styles/native-foundation.css"
   ],
   "languages": [
     {
@@ -44,7 +46,8 @@
       "technique": {},
       "auxiliary": {},
       "legendary": {},
-      "equipment": {}
+      "equipment": {},
+      "background": {}
     }
   },
   "primaryTokenAttribute": "vitality",
@@ -54,5 +57,6 @@
     "units": "m"
   },
   "socket": false,
-  "initiative": "1d20 + @attributes.dexterity.modifier"
+  "initiative": "1d20 + @attributes.dexterity.modifier",
+  "packs": []
 }

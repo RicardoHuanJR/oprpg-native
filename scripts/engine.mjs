@@ -21,7 +21,7 @@ function integer(value,name,{min=0,max=Infinity}={}) {
 }
 export function skillCheck({attributeValue,proficiency,proficient=false,multiplier=1,bonus=0,exhaustion=0,advantage=false,disadvantage=false}) {
   integer(attributeValue,"Atributo",{min:1}); integer(proficiency,"Proficiência");integer(exhaustion,"Exaustão",{max:6});
-  if (![0.5,1,2].includes(multiplier)) throw new Error("Multiplicador de proficiência inválido.");
+  if (![0.5,1,1.5,2].includes(multiplier)) throw new Error("Multiplicador de proficiência inválido.");
   if (!Number.isFinite(bonus)) throw new Error("Bônus inválido.");
   const applied=proficient ? Math.floor(proficiency*multiplier) : 0;
   const modifier=attributeModifier(attributeValue)+bonus-2*exhaustion;

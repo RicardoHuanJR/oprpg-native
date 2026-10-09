@@ -1,7 +1,30 @@
 {
   "TYPES": {
-    "Actor": {"character": "Personagem", "npc": "NPC / Inimigo","ship":"Embarcação"},
-    "Item": {"species": "Espécie / Raça","style":"Estilo de combate","profession":"Profissão","training":"Treinamento","hakiTalent":"Talento de Haki","fruit":"Akuma no Mi","personalization":"Personalização", "weapon": "Arma / Ataque comum", "feature": "Característica", "technique": "Técnica de combate", "auxiliary": "Técnica auxiliar", "legendary": "Ação lendária", "equipment": "Equipamento"}
+    "Actor": {
+      "character": "Personagem",
+      "npc": "NPC / Inimigo",
+      "ship": "Embarcação"
+    },
+    "Item": {
+      "species": "Espécie / Raça",
+      "style": "Estilo de combate",
+      "profession": "Profissão",
+      "training": "Treinamento",
+      "hakiTalent": "Talento de Haki",
+      "fruit": "Akuma no Mi",
+      "personalization": "Personalização",
+      "weapon": "Arma / Ataque comum",
+      "feature": "Característica",
+      "technique": "Técnica de combate",
+      "auxiliary": "Técnica auxiliar",
+      "legendary": "Ação lendária",
+      "equipment": "Equipamento",
+      "background": "Antecedente"
+    }
   },
-  "OPRPG": {"Sheet": "Ficha OP RPG", "CreationAssistant": "Mostrar criação assistida", "CreationAssistantHint": "Oculta ou mostra a aba para toda a mesa, sem remover dados das fichas."}
+  "OPRPG": {
+    "Sheet": "Ficha OP RPG",
+    "CreationAssistant": "Mostrar criação assistida",
+    "CreationAssistantHint": "Oculta ou mostra a aba para toda a mesa, sem remover dados das fichas."
+  }
 }

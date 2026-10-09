@@ -1,0 +1,6 @@
+<header class="sheet-header" style="--op-old-header:url('{{headerArt}}')">
+  <div class="left"><label class="document-name"><span class="sr-only">Nome</span><input name="name" class="uninput" value="{{actor.name}}" {{#unless editable}}disabled{{/unless}}></label><div class="class roboto-upper">{{primaryStyleName}}</div></div>
+  <div class="right"><button type="button" class="level-badge badge" data-action="openProgression" title="Progressão e escolhas"><small>NÍVEL</small>{{system.progression.level}}</button>
+    <div class="sheet-header-buttons"><button type="button" class="gold-button" data-action="startShortRest" aria-label="Iniciar descanso curto"><i class="fa-solid fa-utensils"></i></button><button type="button" class="gold-button" data-action="startRest" aria-label="Iniciar descanso longo"><i class="fa-solid fa-flask"></i></button><button type="button" class="gold-button" data-action="openPowers" aria-label="Haki e Akuma no Mi"><i class="fa-solid fa-hand-fist"></i></button><button type="button" class="gold-button" data-action="openProgression" aria-label="Origens, estilos e treinamentos"><i class="fa-solid fa-gear"></i></button><button type="button" class="gold-button" data-action="chooseHeaderArt" aria-label="Imagem do cabeçalho"><i class="fa-solid fa-image"></i></button></div>
+  </div>
+</header>
