@@ -740,3 +740,19 @@
 
 
 .oprpg-native .op-book-text{white-space:pre-line;line-height:1.45;overflow-wrap:anywhere;}
+
+/* Reading hierarchy: facts first, short highlights, full rule folded away. */
+.oprpg-native :is(.op-rule-summary,.op-rule-body,.op-choice-description){white-space:normal;text-align:left;font-size:13px;line-height:1.55;}
+.oprpg-native .op-rule-facts{display:grid;gap:0;margin:0 0 12px;}
+.oprpg-native .op-rule-facts>div{display:grid;grid-template-columns:minmax(100px,30%) minmax(0,1fr);gap:12px;padding:6px 0;border-bottom:1px solid #71603b44;}
+.oprpg-native .op-rule-facts dt{font-weight:bold;color:#d9bf7c;}
+.oprpg-native .op-rule-facts dd{margin:0;color:#e8e4da;overflow-wrap:anywhere;}
+.oprpg-native .op-rule-highlights{padding-left:20px;margin:10px 0 14px;list-style:disc;}
+.oprpg-native .op-rule-highlights li{display:list-item;margin:0 0 8px;}
+.oprpg-native .op-rule-body p,.oprpg-native .op-choice-description p{margin:0 0 12px;}
+.oprpg-native .op-rule-body h3{font-size:13px;margin:18px 0 8px;color:#d9bf7c;letter-spacing:.02em;}
+.oprpg-native .op-rule-full{border-top:1px solid #71603b66;margin-top:14px;padding-top:10px;}
+.oprpg-native .op-rule-full>summary{color:#d9bf7c;cursor:pointer;margin-bottom:10px;}
+.oprpg-native .op-picker .op-choice-description{padding:10px 14px;margin-top:4px;border-top:1px solid #71603b66;}
+.oprpg-native .op-choice-description>summary{margin-bottom:12px;color:#d9bf7c;cursor:pointer;}
+.oprpg-native .op-choice-description p{white-space:normal;}

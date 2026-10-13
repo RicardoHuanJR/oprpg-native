@@ -80,7 +80,7 @@ export class OriginalLayoutItemSheet extends OPRPGItemSheet {
     if(this.editMode===undefined)this.editMode=false;
     const context=await super._prepareContext(renderOptions);
     const stored=String(this.item.system.description??'');
-    const description=String(!stored||this.item.system.origin==='official'&&/^(?:Consultar|Perícias iniciais e graduação configuradas|Escolha registrada na progressão)/i.test(stored)?bookDescription(this.item)?.description??stored:stored);
+    const description=String(!stored||this.item.system.origin==='official'&&/^(?:Consultar|Perícias iniciais e graduação configuradas|Escolha registrada na progressão|<div class="op-book-text">|<section class="op-rule-summary")/i.test(stored)?bookDescription(this.item)?.description??stored:stored);
     if(['species','style'].includes(this.item.type))context.editable=false;
     const safe=foundry.utils?.cleanHTML?foundry.utils.cleanHTML(description):description.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('\n','<br>');
     const editor=foundry.applications.ux?.TextEditor?.implementation;

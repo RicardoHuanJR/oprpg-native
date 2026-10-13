@@ -1,3 +1,4 @@
+import {bookDescription} from './book-descriptions.mjs';
 import {contentArtwork} from './content-art.mjs';
 import {nativePrompt} from './dialog-ui.mjs';
 import {contentLibrary,contentReference} from './content-library.mjs';
@@ -11,7 +12,7 @@ const esc=value=>foundry.utils.escapeHTML(String(value??''));
 const stages=current=>`<ol class="op-flow-steps" aria-label="Etapas da origem">${['Raça','Variante','Benefícios'].map((label,index)=>`<li class="${index===current?'current':''}" ${index===current?'aria-current="step"':''}>${index+1} · ${label}</li>`).join('')}</ol>`;
 const prompt=options=>nativePrompt({...options,classes:['oprpg-native','op-dialog','op-flow'],position:{width:650}});
 export function availableContent(type) {
- return contentLibrary(type).map(item=>({uuid:item.uuid,name:item.name,identifier:item.system.identifier,family:item.system.family,source:item.system.source,homebrew:item.system.origin==='homebrew',img:contentArtwork(item),description:item.system.description}));
+ return contentLibrary(type).map(item=>({uuid:item.uuid,name:item.name,identifier:item.system.identifier,family:item.system.family,source:item.system.source,homebrew:item.system.origin==='homebrew',img:contentArtwork(item),description:item.system.description,previewHTML:item.system.origin==='official'?bookDescription(item)?.summaryHTML:null}));
 }
 function choiceMarkup(steps) {
  return steps.map((step,index)=>`<fieldset class="op-choice"><legend>${esc(step.label)}</legend><p class="op-hint">${step.count} escolha(s)${step.allowRepeat?' · Pode repetir a opção':''}${step.kind==='attribute'?` · Limite ${step.cap}`:''}</p>${Array.from({length:step.count},(_,slot)=>`<label>Escolha ${slot+1}<select name="choice-${index}-${slot}" required><option value="">Selecione</option>${step.options.map(key=>`<option value="${esc(key)}">${esc(step.kind==='attribute'?ATTRIBUTES[key]:['skill','skillMultiplier'].includes(step.kind)?SKILLS[key]?.label:contentReference(key)?.name||key)}</option>`).join('')}</select></label>`).join('')}</fieldset>`).join('');
