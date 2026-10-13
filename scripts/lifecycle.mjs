@@ -1,6 +1,7 @@
 import {actorNumbers} from './actor-numbers.mjs';
 import {conditionSet,conditionModifiers} from './conditions.mjs';
 import {combatContext} from './combat-rules.mjs';
+import {automaticConcentration} from './automation-policy.mjs';
 export const lifecycleOf=actor=>structuredClone(actor.getFlag('oprpg-native','lifecycle')??{timers:[]});
 export const copyData=value=>JSON.parse(JSON.stringify(value));
 export function canConcentrate(actor){return !actor.system.vitalityState?.dead&&!conditionModifiers(conditionSet(actor.statuses,{...actor.system.vitality,dead:actor.system.vitalityState?.dead}),{}).concentrationBlocked;}
@@ -8,6 +9,10 @@ export function concentrationDamageDC(damage){if(!Number.isFinite(damage)||damag
 export async function checkConcentration(actor,damage,{force=false}={}){
   const state=lifecycleOf(actor);if(!state.concentration)return {required:false};
   let success=false,roll=null;const dc=concentrationDamageDC(damage);
+  if(!force&&!automaticConcentration()){
+    ui.notifications.warn(`Concentração: confira o teste de Constituição CD ${dc}. Use o painel de Concentração para resolver.`);
+    return {required:true,pending:true,dc,damage};
+  }
   if(canConcentrate(actor)){
     const numbers=actorNumbers(actor.system,actor.type),modifiers=conditionModifiers(conditionSet(actor.statuses,actor.system.vitality),{kind:'save',attribute:'constitution'});
     if(!modifiers.automaticFailure){roll=await new Roll(`${modifiers.disadvantage?'2d20kl':'1d20'} + ${numbers.attributes.constitution.saveTotal}`).evaluate();success=roll.total>=dc;}

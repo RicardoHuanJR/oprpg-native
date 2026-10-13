@@ -1,3 +1,5 @@
+import {hakiCommonDamage,hakiMaximizesCommonDamage} from './haki-effects.mjs';
+import {recoveredResource} from './profession.mjs';
 import {weaponAttackSetup,weaponProperties} from './weapon-mechanics.mjs';
 import {actorNumbers} from './actor-numbers.mjs';
 import {racialBoostPlan} from './racial-combat.mjs';
@@ -11,6 +13,7 @@ import {combatContext,activationPlan} from "./combat-rules.mjs";
 import {conditionSet,conditionModifiers,targetAttackModifiers} from "./conditions.mjs";
 import {activityCost,expertiseEligible,underwaterContext,underwaterBudget} from './mechanics.mjs';
 import {activeItemRules} from './item-rules.mjs';
+import {automaticSuffocation,automaticRegeneration} from './automation-policy.mjs';
 
 const queues=new WeakMap();
 // Serializa comandos por documento neste cliente. Autoridade entre clientes ainda exige prova própria.
@@ -32,9 +35,10 @@ export function activityFor(item,variantId=null) {
   if(item.type==='weapon'&&ammo?.system.ammunitionDamage){activity={...activity,damageFormula:ammo.system.ammunitionDamage};resolution={...resolution,damageType:ammo.system.ammunitionType};}
   return {activity,resolution,name:variant?`${item.name} — ${variant.name}`:item.name,id:variant?.id??'primary'};
 }
-function vitalityFor(actor) {return {...actor.system.vitality,dead:actor.system.vitalityState?.dead??false};}
+function vitalityFor(actor) {return {...actor.system.vitality,shield:actor.system.haki?.shield??0,dead:actor.system.vitalityState?.dead??false};}
 function vitalityUpdate(result,actor) {
   const updates={"system.vitality.value":result.value,"system.vitality.temporary":result.temporary,"system.vitality.negative":result.negative};
+  if(actor.system.haki&&Number.isFinite(result.shield))updates["system.haki.shield"]=result.shield;
   if(actor.type!=="ship") updates["system.vitalityState.dead"]=Boolean(result.dead);
   return updates;
 }
@@ -43,27 +47,31 @@ export async function damageInside(actor,options) {
     if(!actor.isOwner)throw new Error("Sem permissão.");
     if(actor.type==="ship") throw new RuleDecisionRequired("Dano de navio exige o pipeline marítimo; não aplicar regras de PV negativos de personagem.");
     const mitigation={...actor.system.damageMitigation};if(underwaterContext(actor.system).submerged)mitigation.resistances=[...new Set([...(mitigation.resistances??[]),'fire'])];
+    if(actor.system.haki?.shield>0)mitigation.resistances=[...new Set([...(mitigation.resistances??[]),'bludgeoning','slashing','piercing'])];
     const result=resolveDamage(vitalityFor(actor),{...options,...mitigation,deathPolicy:actor.system.vitalityState.deathPolicy});
     await actor.update(vitalityUpdate(result.vitality,actor));
     if(result.total>0){await checkConcentration(actor,result.total);
-      if(underwaterContext(actor.system).submerged&&!actor.system.environment.breathesUnderwater){
+      if(automaticSuffocation()&&underwaterContext(actor.system).submerged&&!actor.system.environment.breathesUnderwater){
         const dc=Math.max(10,Math.floor(result.total/2)),numbers=actorNumbers(actor.system,actor.type);
         const roll=await new Roll(`1d20 + ${numbers.attributes.constitution.saveTotal}`).evaluate();
         if(roll.total<dc){await actor.toggleStatusEffect('suffocated',{active:true});const state=lifecycleOf(actor);delete state.breathUntil;await actor.update({'flags.oprpg-native.lifecycle':state});}
         try{await roll.toMessage({speaker:ChatMessage.getSpeaker({actor}),flavor:`Manter respiração · CD ${dc}`});}catch{}
       }
-      if(result.total>=10&&actor.system.vitality.value>0&&!actor.system.vitalityState?.dead&&!actor.statuses?.has('unconscious')&&!actor.statuses?.has('suffocated')&&actor.items.some(item=>item.system.identifier==='guerreiro-nato'&&item.system.training?.state==='learned')){
+      if(automaticRegeneration()&&result.total>=10&&actor.system.vitality.value>0&&!actor.system.vitalityState?.dead&&!actor.statuses?.has('unconscious')&&!actor.statuses?.has('suffocated')&&actor.items.some(item=>item.system.identifier==='guerreiro-nato'&&item.system.training?.state==='learned')){
         const regeneration=await new Roll(`1d6 + ${actor.system.attributes.constitution.modifier}`).evaluate();const healing=resolveHealing(vitalityFor(actor),Math.max(0,regeneration.total));await actor.update(vitalityUpdate(healing.vitality,actor));
       }
     }return result;
 }
 export async function healActor(actor,amount) {
-  return actorCommand(actor,async()=>{
+  return actorCommand(actor,()=>healInside(actor,amount));
+}
+// Caller must already hold the actor queue, as with damageInside.
+export async function healInside(actor,amount) {
+    if(!actor.isOwner)throw new Error('Sem permissão.');
     if(actor.type==="ship") throw new RuleDecisionRequired("Reparo de navio é uma operação própria.");
     if(actor.statuses?.has('suffocated'))throw new Error('Não é possível recuperar PV enquanto estiver sufocado.');
     const result=resolveHealing(vitalityFor(actor),amount);
     await actor.update(vitalityUpdate(result.vitality,actor));return result;
-  });
 }
 export async function grantTemporary(actor,amount,choice) {
   return actorCommand(actor,()=>actor.update({"system.vitality.temporary":temporaryHP(actor.system.vitality.temporary,amount,choice),...(choice!=="keep"?{"flags.oprpg-native.temporarySource":null}:{})}));
@@ -89,18 +97,20 @@ export async function startLongRest(actor,kind="long") {
   if(!["short","long"].includes(kind))throw new Error("Descanso inválido.");
   return actorCommand(actor,()=>actor.update({"system.rest.startedAt":game.time.worldTime,"system.rest.startHP":actor.system.vitality.value,"system.rest.startExhaustion":actor.system.exhaustion,"system.rest.kind":kind,"system.rest.shortEligible":false}));
 }
-export async function finishShortRest(actor) {
+export async function finishShortRest(actor,{narratorConfirmed=false}={}) {
   return actorCommand(actor,async()=>{
-    if(actor.system.rest.kind!=="short"||actor.system.rest.startedAt===null||game.time.worldTime-actor.system.rest.startedAt<60*Math.min(30,...activeItemRules(actor.system,[...(actor.items??[])]).filter(rule=>rule.kind==='shortRestMinutes'&&rule.value>0).map(rule=>rule.value)))throw new Error("Descanso curto não concluído (30 minutos).");
+    if(narratorConfirmed&&!game.user.isGM)throw new Error('Somente o Narrador confirma um descanso sem avançar o relógio.');
+    if(actor.system.rest.kind!=="short"||actor.system.rest.startedAt===null||(!narratorConfirmed&&game.time.worldTime-actor.system.rest.startedAt<60*Math.min(30,...activeItemRules(actor.system,[...(actor.items??[])]).filter(rule=>rule.kind==='shortRestMinutes'&&rule.value>0).map(rule=>rule.value))))throw new Error("Descanso curto não concluído (30 minutos, salvo benefício). Avance o tempo ou solicite confirmação do Narrador.");
     const chase=actor.getFlag('oprpg-native','chase');
-    await actor.update({"system.rest.startedAt":null,"system.rest.shortEligible":true,...(chase?{"system.exhaustion":Math.max(0,actor.system.exhaustion-(chase.extraExhaustion??0)),"flags.oprpg-native.chase":null}:{}),"system.resources":actor.system.resources.map(resource=>["short","shortOrLong"].includes(resource.recovery)?{...resource,value:resource.max}:{...resource})});
+    await actor.update({"system.rest.startedAt":null,"system.rest.shortEligible":true,...(chase?{"system.exhaustion":Math.max(0,actor.system.exhaustion-(chase.extraExhaustion??0)),"flags.oprpg-native.chase":null}:{}),"system.resources":actor.system.resources.map(resource=>["short","shortOrLong"].includes(resource.recovery)?recoveredResource(resource):{...resource})});
   });
 }
-export async function finishLongRest(actor,powerPolicy=RULE_DECISIONS.exhaustedLongRestPower,recoverDice=null) {
+export async function finishLongRest(actor,powerPolicy=RULE_DECISIONS.exhaustedLongRestPower,recoverDice=null,{narratorConfirmed=false}={}) {
   return actorCommand(actor,async()=>{
+    if(narratorConfirmed&&!game.user.isGM)throw new Error('Somente o Narrador confirma um descanso sem avançar o relógio.');
     if(actor.system.rest.startedAt===null) throw new Error("Registre o início do descanso primeiro.");
     if(actor.system.rest.kind&&actor.system.rest.kind!=="long")throw new Error("O descanso registrado é curto.");
-    const updates=longRestPlan(actor.system,{startedAt:actor.system.rest.startedAt,completedAt:game.time.worldTime,startHP:actor.system.rest.startHP,startExhaustion:actor.system.rest.startExhaustion,powerPolicy});
+    const updates=longRestPlan(actor.system,{startedAt:actor.system.rest.startedAt,completedAt:game.time.worldTime,startHP:actor.system.rest.startHP,startExhaustion:actor.system.rest.startExhaustion,powerPolicy,durationConfirmed:narratorConfirmed,intervalConfirmed:narratorConfirmed});
     if(actor.system.hitDice.pools?.length) {
       const pools=actor.system.hitDice.pools;const limit=Math.min(pools.reduce((sum,p)=>sum+p.max-p.available,0),Math.max(1,Math.floor(actor.system.hitDice.max/2)));
       const selected=recoverDice??(pools.length===1?{[pools[0].faces]:limit}:null);
@@ -113,7 +123,7 @@ export async function finishLongRest(actor,powerPolicy=RULE_DECISIONS.exhaustedL
     updates["system.rest.startedAt"]=null;
     const chase=actor.getFlag('oprpg-native','chase');
     if(chase){updates['system.exhaustion']=Math.max(0,(updates['system.exhaustion']??actor.system.exhaustion)-(chase.extraExhaustion??0));updates['flags.oprpg-native.chase']=null;}
-    updates["system.resources"]=actor.system.resources.map(resource=>["long","shortOrLong"].includes(resource.recovery) ? {...resource,value:resource.max} : {...resource});
+    updates["system.resources"]=actor.system.resources.map(resource=>["long","shortOrLong"].includes(resource.recovery) ? recoveredResource(resource) : {...resource});
     await actor.update(updates);
     return updates;
   });
@@ -128,10 +138,12 @@ export async function rollDamage(item,{critical=false,variantId=null}={}) {
   if(!activity?.damageFormula.trim()) throw new Error("Registre uma fórmula de dano da fonte.");
   const damageOnly=actor.getFlag('oprpg-native','lastActivity')?.itemUUID===item.uuid&&actor.getFlag('oprpg-native','lastActivity')?.damageOnly;
   const modifier=!damageOnly&&resolution.addAttributeToDamage ? actor.system.attributes[activity.attribute].modifier : 0;
-  let roll=new Roll(`${activity.damageFormula} + ${modifier}`,actor.getRollData());
+  const formula=selected===previous?activity.damageFormula:item.type==='weapon'?hakiCommonDamage(actor,activity.damageFormula,resolution.damageType):activity.damageFormula;
+  let roll=new Roll(`${formula} + ${modifier}`,actor.getRollData());
   if(critical) roll=roll.alter(2,0,{multiplyNumeric:false});
   for(const component of selected.extraDamageComponents??[]){let extra=new Roll(component.formula);if(critical)extra=extra.alter(2,0,{multiplyNumeric:false});await extra.toMessage({speaker:ChatMessage.getSpeaker({actor}),flavor:`${component.type==='lightning'?'Electro':'Heat'} · dano adicional separado`});}
-  if(actor.getFlag('oprpg-native','expertise')?.kind==='maximize'&&actor.getFlag('oprpg-native','expertise').source===item.uuid){await roll.evaluate({maximize:true});await actor.update({'flags.oprpg-native.expertise':null});}
+  const expertiseMax=actor.getFlag('oprpg-native','expertise')?.kind==='maximize'&&actor.getFlag('oprpg-native','expertise').source===item.uuid;
+  if(expertiseMax||(!critical&&selected.maximizeDamage)){await roll.evaluate({maximize:true});if(expertiseMax)await actor.update({'flags.oprpg-native.expertise':null});}
   return roll.toMessage({speaker:ChatMessage.getSpeaker({actor}),flavor:`${foundry.utils.escapeHTML(name)} — ${critical?"dano crítico":"dano"}; aplicação ao alvo é separada`},{rollMode:game.settings.get("core","rollMode")});
 }
 export async function useActivity(item,{advantage=false,disadvantage=false,overload=false,requestId,variantId=null,targetDistance=null,targetCR=null,targetActorUUID=null,canSeeInvisible=false,prepare=false,trigger='',releasePrepared=false,expertiseAttack=false,attributeOverride=null,twoHands=false,throwing=false,racialBoost='',racialAlternative=false}={}) {
@@ -154,7 +166,7 @@ export async function useActivity(item,{advantage=false,disadvantage=false,overl
     if((prepare||activity.concentration)&&!canConcentrate(actor))throw new Error('A condição atual impede concentração.');
     const previous=actor.getFlag("oprpg-native","operations")??[];
     if(previous.includes(requestId)) return {duplicate:true};
-    if(item.type==='weapon'){const setup=weaponAttackSetup(item,actor,{attributeOverride,twoHands,throwing,targetDistance,baseFormula:activity.damageFormula});activity={...activity,attribute:setup.attribute,damageFormula:setup.damageFormula};disadvantage||=setup.disadvantage;}
+    if(item.type==='weapon'){const setup=weaponAttackSetup(item,actor,{attributeOverride,twoHands,throwing,targetDistance,baseFormula:activity.damageFormula});activity={...activity,attribute:setup.attribute,damageFormula:hakiCommonDamage(actor,setup.damageFormula,resolution.damageType)};disadvantage||=setup.disadvantage;}
     const ammunition=prepare?null:ammunitionPlan(actor,activity);
     if(actor.system.exhaustion>=6||actor.system.vitalityState.dead) throw new Error("Ator impedido de executar esta atividade.");
     const conditions=conditionModifiers(conditionSet(actor.statuses,{...actor.system.vitality,dead:actor.system.vitalityState.dead}),{kind:"attack",category:item.type});
@@ -229,7 +241,8 @@ export async function useActivity(item,{advantage=false,disadvantage=false,overl
     else if(releasePrepared)delete lifecycle.concentration;
     if(lifecycle.sulong&&!lifecycle.sulong.controlled&&!game.user.isGM)throw new Error('O Narrador controla a forma Sulong sem Leão da Lua.');
     if(prepare||releasePrepared||activity.concentration)updates['flags.oprpg-native.lifecycle']=lifecycle;
-    updates['flags.oprpg-native.lastActivity']={requestId,itemUUID:item.uuid,activityId,activity:copyData(activity),resolution:copyData(resolution),attack:copyData(attack),prepared:prepare,damageOnly:expertiseAttack,extraDamageComponents:boost.components};
+    const operation={maximizeDamage:item.type==='weapon'&&hakiMaximizesCommonDamage(actor,attack?.natural,attack?.critical),requestId,itemUUID:item.uuid,activityId,activity:copyData(activity),resolution:{...copyData(resolution),...(resolution.kind==='save'?{saveDC:resolution.saveDC??(actor.type==='npc'?actor.system.saveDifficulty:8+actor.system.attributes[activity.attribute].modifier+actor.system.proficiency.bonus)}:{})},attack:copyData(attack),prepared:prepare,damageOnly:expertiseAttack,extraDamageComponents:boost.components,expertiseIdentifier:item.system.identifier};
+    updates['flags.oprpg-native.lastActivity']=operation;
     if(ammunition)await ammunition.item.update({"system.equipment.quantity":ammunition.after});
     try{await actor.update(updates);}catch(error){if(ammunition)await ammunition.item.update({"system.equipment.quantity":ammunition.before});throw error;}
     if(roll&&actor.statuses?.has('burned')&&lifecycle.burnedEpoch!==turnMark(actor)){
@@ -238,7 +251,7 @@ export async function useActivity(item,{advantage=false,disadvantage=false,overl
     }
     const expertise=attack&&expertiseEligible({category:item.type,natural:attack.natural,proficient:activity.proficient,resolutionKind:resolution.kind})?item.system.weapon?.expertise:null;
     const content=`<article class="oprpg-chat"><h3>${foundry.utils.escapeHTML(name)}</h3><p>${CATEGORIES[item.type]} · ${quote.base} PP registrados · ${cost.cost} PP gastos</p>${expertise?`<p><strong>Expertise disponível:</strong> ${foundry.utils.escapeHTML(expertise)}. Escolha o efeito aplicável com o Narrador; apenas uma expertise pode permanecer ativa por criatura.</p>`:''}<p>${foundry.utils.escapeHTML(activity.requirements)}<br>${foundry.utils.escapeHTML(activity.range)} · ${foundry.utils.escapeHTML(activity.duration)}</p><p>Confira alvos, salvaguardas e exceções da fonte.</p></article>`;
-    const data={speaker:ChatMessage.getSpeaker({actor}),flavor:content,flags:{"oprpg-native":{requestId,actorUUID:actor.uuid,itemUUID:item.uuid,activityId,attack}}};
+    const data={speaker:ChatMessage.getSpeaker({actor}),flavor:content,flags:{"oprpg-native":{requestId,actorUUID:actor.uuid,itemUUID:item.uuid,activityId,attack,operation:copyData(operation)}}};
     try {
       if(roll) await roll.toMessage(data,{rollMode:game.settings.get("core","rollMode")});
       else {

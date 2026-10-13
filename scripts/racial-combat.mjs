@@ -1,5 +1,10 @@
 import {activationPlan} from './combat-rules.mjs';
 import {lifecycleOf} from './lifecycle.mjs';
+export function racialBoostOptions(actor){
+ const species=actor.system.identity?.species,identifier=species?.identifier??'',traits=(species?.traits??'').toLowerCase();
+ if(lifecycleOf(actor).sulong)return [];
+ return [['electro','Electro','minks'],['heat','Heat','lunarianos']].filter(([kind,_label,prefix])=>identifier.startsWith(prefix)||traits.includes(kind)).map(([value,label])=>({value,label}));
+}
 export function racialBoostPlan(actor,{kind='',alternative=false,context,state,resources}){
  const sulong=Boolean(lifecycleOf(actor).sulong);
  if(sulong)kind='electro';if(!kind)return {state,resources,components:[]};

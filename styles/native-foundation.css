@@ -1,4 +1,4 @@
-/* Native presentation primitives. No imported legacy stylesheet or artwork. */
+/* Native presentation primitives and locally adapted original UI assets. */
 .oprpg-native.oprpg-legacy{--op-old-color-gold:#c6a345;--op-old-color-card:#120d19;--op-old-color-text-primary:#eee6d8;--op-old-color-text-secondary:#bfb19a;--op-old-color-border:#8b702f;color:#eee6d8;}
 .oprpg-native.oprpg-legacy .window-header{background:#201714;color:#dfbd68;border-bottom:1px solid #75602d;}
 .oprpg-native.oprpg-legacy .window-content{color:#eee6d8;}
@@ -6,7 +6,7 @@
 .oprpg-native.oprpg-legacy button:disabled{cursor:default;opacity:.6;}
 .oprpg-native.oprpg-legacy input,.oprpg-native.oprpg-legacy select,.oprpg-native.oprpg-legacy textarea{color:#eee6d8;background:#18111e;border:1px solid #6e5831;}
 .oprpg-native.oprpg-legacy button:focus-visible,.oprpg-native.oprpg-legacy input:focus-visible,.oprpg-native.oprpg-legacy select:focus-visible{outline:2px solid #e0bc5e;outline-offset:2px;}
-.oprpg-native.oprpg-legacy op-filigree-box{position:relative;border:1px solid #a98734;border-radius:18px;background:#120d19;box-shadow:inset 0 0 0 4px #120d19,inset 0 0 0 5px #796025;}
+.oprpg-native.oprpg-legacy op-filigree-box{position:relative;border:0;border-radius:0;background:transparent;box-shadow:none;}
 .oprpg-native.oprpg-legacy .skills .name,.oprpg-native.oprpg-legacy .saves .name{background:transparent;border:0;}
 .oprpg-native.oprpg-legacy .proficiency-dot{display:inline-flex;align-items:center;justify-content:center;}
 .oprpg-native.oprpg-legacy .proficiency-dot input[type=checkbox]{flex:0 0 11px;box-shadow:none;position:static;}
@@ -43,3 +43,700 @@
 .oprpg-native.oprpg-legacy .ability-score{flex:0 0 64px;}
 .oprpg-native.op-dialog .dialog-content{max-height:calc(75vh - 80px);overflow:auto;padding-right:6px;}
 .oprpg-native.op-dialog .form-footer{flex-shrink:0;position:sticky;bottom:0;background:#15101b;padding-top:8px;z-index:2;}
+
+.oprpg-native.oprpg-legacy .op-movement-counter{display:flex;flex-direction:column;gap:4px;width:100%;padding:6px;margin:8px 0;font-size:11px;}
+.oprpg-native.oprpg-legacy .op-movement-counter small{font-size:9px;}
+
+/* Classical OP presentation: unified controls, rhythm and small details. */
+.oprpg-native:is(.oprpg-legacy,.op-dialog){
+  --op-bg:#110d16;--op-soft:#19131f;--op-card:#1b151f;--op-border:#655032;
+  --op-text:#f0e9dc;--op-muted:#bfb3a1;--op-gold:#c6a345;--op-gold-light:#eed18a;
+  --op-control-border:#79603a;--op-control-hover:#a68a49;
+  --op-focus:#efcf78;--op-danger:#df9184;
+  font-size:12px;line-height:1.45;
+}
+.oprpg-native:is(.oprpg-legacy,.op-dialog) *{box-sizing:border-box;}
+.oprpg-native:is(.oprpg-legacy,.op-dialog) .window-header{min-height:34px;padding:3px 8px;background:#211916;gap:6px;}
+.oprpg-native:is(.oprpg-legacy,.op-dialog) .window-header .window-title{font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.oprpg-native:is(.oprpg-legacy,.op-dialog) .window-header button{width:28px;height:28px;min-height:28px;padding:0;border:1px solid transparent;border-radius:3px;background:transparent;color:#ddc388;}
+.oprpg-native:is(.oprpg-legacy,.op-dialog) .window-header button:hover{background:#3a2b20;border-color:#826338;}
+.oprpg-native .window-header .op-edit-mode[aria-pressed=true]{background:#493822;border-color:#b08d43;color:#f6dfa4;}
+.oprpg-native:is(.oprpg-legacy,.op-dialog) button{transition:background-color .12s,border-color .12s,color .12s;box-shadow:none;}
+.oprpg-native:is(.oprpg-legacy,.op-dialog) button:not(.unbutton):not(.header-control):not(.level-badge):not(.pip):not(.lozenge){min-height:30px;border-radius:3px;border-color:var(--op-control-border);font-size:12px;line-height:1.25;}
+.oprpg-native:is(.oprpg-legacy,.op-dialog) button:not(.unbutton):not(.level-badge):not(.pip):hover:not(:disabled){border-color:var(--op-control-hover);color:#f5dc9b;background-color:#30241f;}
+.oprpg-native:is(.oprpg-legacy,.op-dialog) button:not(.unbutton):not(.level-badge):not(.pip):active:not(:disabled){background-color:#443224;}
+/* Native equivalent of the original forms.less reset, before specialized controls. */
+.oprpg-native:is(.oprpg-legacy,.op-dialog) button.unbutton{background:none;border:0;box-shadow:none;margin:0;padding:0;min-height:0;line-height:normal;}
+.oprpg-native:is(.oprpg-legacy,.op-dialog) button.unbutton:is(:hover,:focus,:active){background-color:transparent;border-color:transparent;box-shadow:none;}
+.oprpg-native:is(.oprpg-legacy,.op-dialog) button>i{margin:0;}
+.oprpg-native:is(.oprpg-legacy,.op-dialog) :is(button,input,select,textarea):focus-visible{outline:2px solid var(--op-focus);outline-offset:2px;}
+.oprpg-native:is(.oprpg-legacy,.op-dialog) button:disabled{opacity:.45;cursor:default;}
+.oprpg-native:is(.oprpg-legacy,.op-dialog) input:disabled{opacity:1;color:#c7bea9;}
+.oprpg-native:is(.oprpg-legacy,.op-dialog) :is(input,select,textarea){accent-color:#c6a345;caret-color:#eed18a;}
+.oprpg-native:is(.oprpg-legacy,.op-dialog) :is(input,textarea)::placeholder{color:#998b78;opacity:1;}
+.oprpg-native:is(.oprpg-legacy,.op-dialog) input:not([type=checkbox]):not([type=radio]):not([type=range]),
+.oprpg-native:is(.oprpg-legacy,.op-dialog) select{font-variant-numeric:tabular-nums;}
+.oprpg-native:is(.oprpg-legacy,.op-dialog) input[type=number]{appearance:textfield;}
+.oprpg-native:is(.oprpg-legacy,.op-dialog) input[type=number]::-webkit-inner-spin-button{opacity:0;}
+.oprpg-native:is(.oprpg-legacy,.op-dialog) input[type=number]:focus::-webkit-inner-spin-button{opacity:1;}
+.oprpg-native:is(.oprpg-legacy,.op-dialog) .op-checkbox{display:flex;flex-direction:row;align-items:center;gap:8px;line-height:1.45;margin:8px 0;}
+.oprpg-native:is(.oprpg-legacy,.op-dialog) .op-checkbox input[type=checkbox]{appearance:auto;flex:0 0 15px;width:15px;height:15px;min-height:15px;margin:0;padding:0;}
+.oprpg-native:is(.oprpg-legacy,.op-dialog) .op-checkbox input::before,
+.oprpg-native:is(.oprpg-legacy,.op-dialog) .op-checkbox input::after{content:none;display:none;}
+.oprpg-native:is(.oprpg-legacy,.op-dialog) :is(.op-card,.op-choice){border-color:#665033;background:#1a141e;box-shadow:none;}
+.oprpg-native.oprpg-legacy .op-card{border-radius:5px;padding:14px 16px;}
+.oprpg-native:is(.oprpg-legacy,.op-dialog) .op-hint{font-size:11px;color:#b9ad99;line-height:1.55;margin:8px 0;}
+.oprpg-native:is(.oprpg-legacy,.op-dialog) :is(label,.op-stat){color:#cfc3ad;}
+.oprpg-native:is(.oprpg-legacy,.op-dialog) :is(.op-buttons,.op-card>header){display:flex;align-items:center;flex-wrap:wrap;gap:6px;}
+.oprpg-native:is(.oprpg-legacy,.op-dialog) .op-card>header{justify-content:space-between;margin-bottom:10px;}
+.oprpg-native:is(.oprpg-legacy,.op-dialog) .op-card>header h3{margin:0;}
+.oprpg-native:is(.oprpg-legacy,.op-dialog) details{border:1px solid #57452f;border-radius:4px;padding:8px 10px;background:#15101a;margin:8px 0;}
+.oprpg-native:is(.oprpg-legacy,.op-dialog) summary{cursor:pointer;color:#dfc583;font-size:12px;line-height:1.5;}
+.oprpg-native:is(.oprpg-legacy,.op-dialog) details[open]>summary{margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #4b3c2b;}
+.oprpg-native:is(.oprpg-legacy,.op-dialog) :is(.window-content,.dialog-content,.tab-body,.sidebar,.op-item-body,.op-body){scrollbar-width:thin;scrollbar-color:#806638 #141019;}
+.oprpg-native.oprpg-legacy .sheet-header .document-name{filter:drop-shadow(0 1px 2px #000);}
+.oprpg-native.oprpg-legacy .sheet-header .class{font-size:11px;letter-spacing:.08em;text-shadow:0 1px 3px #000;}
+.oprpg-native.oprpg-legacy .sheet-header .right{gap:12px;}
+.oprpg-native.oprpg-legacy .gold-button{width:30px;height:30px;min-height:30px;background:#130e13;border-color:#8b703b;}
+.oprpg-native.oprpg-legacy .sheet-header-buttons{gap:5px;}
+.oprpg-native.oprpg-legacy .sidebar .card{background:#18131a;border:1px solid #433824;border-radius:3px;box-shadow:0 2px 8px #0005;}
+.oprpg-native.oprpg-legacy .portrait{height:246px;padding:6px;border-color:#8e7337;}
+.oprpg-native.oprpg-legacy .portrait img{background:#201c23;}
+.oprpg-native.oprpg-legacy .portrait .slide-toggle{font-size:9px;letter-spacing:.03em;}
+.oprpg-native.oprpg-legacy .stats{padding:0 9px 12px;}
+.oprpg-native.oprpg-legacy .lozenge .value{font-variant-numeric:tabular-nums;font-size:17px;color:#21180d;text-shadow:none;}
+.oprpg-native.oprpg-legacy .lozenge .label{color:#d1c2a1;font-size:8px;}
+.oprpg-native.oprpg-legacy .lozenge:hover .value{background:linear-gradient(#f1dfaa,#b39a62);}
+.oprpg-native.oprpg-legacy .meter{height:32px;border-color:#917444;border-radius:3px;overflow:hidden;}
+.oprpg-native.oprpg-legacy .meter-group{margin:12px 0;}
+.oprpg-native.oprpg-legacy .meter-group>.label{font-size:10px;letter-spacing:.04em;align-items:center;}
+.oprpg-native.oprpg-legacy .meter input{font-variant-numeric:tabular-nums;font-size:14px;}
+.oprpg-native.oprpg-legacy .meter-group .op-buttons{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;}
+.oprpg-native.oprpg-legacy .meter-group .op-buttons button{font-size:10px!important;padding:3px 2px;}
+.oprpg-native.oprpg-legacy .op-movement-counter{background:#211a20;border-color:#6d5735;text-align:left;align-items:flex-start;padding:7px 9px;}
+.oprpg-native.oprpg-legacy .op-movement-counter small{color:#c1b08b;}
+.oprpg-native.oprpg-legacy .ability-score .label{font-size:11px;letter-spacing:.04em;}
+.oprpg-native.oprpg-legacy .ability-score .mod{font-size:15px;color:#e1c572;}
+.oprpg-native.oprpg-legacy .ability-score .score{font-variant-numeric:tabular-nums;}
+.oprpg-native.oprpg-legacy .op-npc-header+.ability-scores{margin-top:8px;margin-bottom:14px;}
+.oprpg-native.oprpg-legacy .op-mechanics-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-bottom:16px;}
+.oprpg-native.oprpg-legacy .op-mechanics-controls button{padding:7px 8px;text-align:left;min-height:32px;}
+.oprpg-native.oprpg-legacy op-filigree-box{border-radius:12px;padding:16px 13px;}
+.oprpg-native.oprpg-legacy op-filigree-box h3{margin:0 0 13px;font-size:12px;letter-spacing:.025em;}
+.oprpg-native.oprpg-legacy .skills li:not(.skill-separator){min-height:32px;border-bottom-color:#493b2a;}
+.oprpg-native.oprpg-legacy .skills li:not(.skill-separator):hover{background:#231b24;}
+.oprpg-native.oprpg-legacy .skills .name{font-size:12px;}
+.oprpg-native.oprpg-legacy .skills .skill-separator{padding-top:12px;color:#e0c782;font-size:10px;letter-spacing:.035em;}
+.oprpg-native.oprpg-legacy .bonus{font-variant-numeric:tabular-nums;color:#e6d6b2;}
+.oprpg-native.oprpg-legacy .config-button{min-width:24px;width:24px;height:24px;min-height:24px!important;display:inline-flex;align-items:center;justify-content:center;border:1px solid transparent;border-radius:3px;background:transparent;}
+.oprpg-native.oprpg-legacy .proficiency-dot{width:16px;height:22px;align-items:center;}
+.oprpg-native.oprpg-legacy .saves ul{gap:14px 12px;}
+.oprpg-native.oprpg-legacy .tabs-right{gap:6px;width:38px;}
+.oprpg-native.oprpg-legacy .tabs-right button{width:35px;height:36px;min-height:36px!important;border:1px solid #51402c;border-radius:3px 0 0 3px;background:#201722;}
+.oprpg-native.oprpg-legacy .tabs-right button[aria-pressed=true]{background:#c6a345;color:#191219;border-color:#e5c97d;box-shadow:inset 3px 0 #f6e2a8;}
+.oprpg-native.oprpg-legacy .pill-lg{margin:6px 0;min-height:52px;padding:9px 11px;background:#251b22;border-color:#725837;border-radius:4px;}
+.oprpg-native.oprpg-legacy .pill-lg .title{font-size:12px;}
+.oprpg-native.oprpg-legacy .pill-lg small{margin-top:3px;color:#bdae93;font-size:9px;letter-spacing:.04em;}
+.oprpg-native.oprpg-legacy .op-item-navigation{gap:2px;padding:5px 12px;background:#151019;}
+.oprpg-native.oprpg-legacy .op-item-navigation button{font-size:11px!important;padding:7px 8px;border-radius:3px 3px 0 0!important;}
+.oprpg-native.oprpg-legacy .op-item-navigation button.active{background:#2b2028;border-bottom-color:#d8b563;color:#f1d48e;}
+.oprpg-native.oprpg-legacy .op-item-body{padding:16px;}
+.oprpg-native.oprpg-legacy .op-item-body textarea{line-height:1.5;min-height:96px;}
+.oprpg-native:is(.oprpg-legacy,.op-dialog) button:is([data-action=deleteItem],[data-action=deleteEffect],[data-action=removeVariant],[data-action=removeAdvancement],[data-action=removeRule]){color:#e7a499;border-color:#6f413a;background:#29171a;}
+.oprpg-native.op-dialog .window-content{padding:14px 16px;}
+.oprpg-native.op-dialog .op-choice{border-radius:5px;padding:10px 12px;margin:0 0 12px;}
+.oprpg-native.op-dialog .op-choice legend{font-size:17px;letter-spacing:.02em;}
+.oprpg-native.op-dialog label{font-size:12px;margin:6px 0;gap:4px;}
+.oprpg-native.op-dialog .dialog-content{max-height:calc(75vh - 95px);padding-right:6px;}
+.oprpg-native.op-dialog .form-footer{gap:8px;padding-top:10px;border-top:1px solid #53402d;}
+.oprpg-native.op-dialog .form-footer button{background:#bfa054;color:#17110d;font-weight:bold;min-height:34px;}
+.oprpg-native.op-dialog .form-footer button:hover:not(:disabled){background:#ddbd70;color:#17110d;}
+.oprpg-native.op-dialog .op-status-grid{gap:6px;}
+.oprpg-native.op-dialog .op-status-grid>span{padding:7px 9px;background:#231b25;border:1px solid #51422f;border-radius:3px;}
+.oprpg-native.op-dialog .op-flow-summary{display:flex;flex-wrap:wrap;gap:8px 22px;padding:9px 11px;background:#211923;border:1px solid #56432d;border-radius:4px;}
+.oprpg-native.oprpg-legacy .op-item-group li{gap:7px;padding:8px 2px;border-top-color:#493b2c;flex-wrap:wrap;}
+.oprpg-native.oprpg-legacy .op-item-group .op-item-icon{width:30px;height:30px;flex:0 0 30px;object-fit:contain;border:1px solid #58492f;background:#17121b;border-radius:3px;}
+.oprpg-native.oprpg-legacy .op-item-title{flex:1;min-width:150px;}
+.oprpg-native.oprpg-legacy .op-item-title button{min-height:24px!important;padding:1px 0;font-size:12px!important;text-align:left;background:transparent;border:0;}
+.oprpg-native.oprpg-legacy .op-item-title small{display:block;color:#bcb09b;font-size:10px;margin-top:3px;}
+.oprpg-native.oprpg-legacy .op-item-group li>button{padding:5px 8px;font-size:11px!important;}
+.oprpg-native.oprpg-legacy .op-item-group button:is([data-action=toggleFavorite],[data-action=deleteItem]){width:28px;min-width:28px;height:28px;min-height:28px!important;padding:0;}
+.oprpg-native.oprpg-legacy [data-action=toggleFavorite][aria-pressed=true]{color:#f3d77e;background:#332618;border-color:#a0833e;}
+.oprpg-native.oprpg-legacy .op-badge{font-size:9px;padding:2px 5px;border-color:#635032;background:#221a23;color:#d2c198;}
+.oprpg-native.oprpg-legacy .op-item-group li.op-hint{padding:12px 2px;color:#b5a68d;font-size:11px;}
+@media(prefers-reduced-motion:reduce){.oprpg-native button{transition:none!important;}}
+@media(max-width:850px){.oprpg-native.op-dialog .op-three-col{grid-template-columns:1fr 1fr;}.oprpg-native.oprpg-legacy .op-mechanics-controls{grid-template-columns:repeat(2,minmax(0,1fr));}}
+
+/* Consulta rápida na ficha clássica. */
+.oprpg-native .op-style-summary,.oprpg-native .op-origin-reference {display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;}
+.oprpg-native .op-profession-summary .name {display:flex;flex-direction:column;gap:4px;min-width:0;}
+.oprpg-native .op-trait-summary {border-block:1px solid #6e5624;margin:12px 0;padding:10px 0;display:grid;gap:7px;}
+.oprpg-native .op-trait-summary>div {display:grid;grid-template-columns:110px minmax(0,1fr);gap:8px;font-size:12px;}
+.oprpg-native .op-trait-summary strong {color:#d8bc68;}
+.oprpg-native .op-trait-summary span,.oprpg-native .op-item-requirements {overflow-wrap:anywhere;}
+.oprpg-native .op-profession-card {border:1px solid #6e5624;border-radius:5px;padding:10px;margin:10px 0;background:#1b1420;}
+.oprpg-native .op-profession-card summary {display:flex;align-items:center;gap:10px;cursor:pointer;color:#f0e5ca;}
+.oprpg-native .op-profession-card summary img {width:36px;height:36px;object-fit:contain;}
+.oprpg-native .op-profession-card summary small {display:block;color:#d8bc68;font-size:11px;margin-top:3px;}
+.oprpg-native .op-profession-description {padding:10px 0;overflow-wrap:anywhere;}
+.oprpg-native .op-item-title small {display:block;}
+.oprpg-native.oprpg-legacy .pill-lg.race,
+.oprpg-native.oprpg-legacy .pill-lg.background {display:flex;align-items:center;gap:10px;text-align:left;}
+.oprpg-native.oprpg-legacy .pill-lg .gold-icon {width:32px;height:32px;max-width:32px;max-height:32px;flex:0 0 32px;object-fit:contain;}
+.oprpg-native.oprpg-legacy .pill-lg .name-stacked {display:flex;flex-direction:column;min-width:0;flex:1;}
+.oprpg-native.oprpg-legacy .pill-lg .name-stacked .title {overflow-wrap:anywhere;}
+/* Blocos e listas de escolha inspirados nas janelas da ficha clássica. */
+.oprpg-native.op-dialog .op-pick-list {display:grid;gap:6px;max-height:320px;overflow:auto;padding:2px;}
+.oprpg-native.op-dialog .op-pick-entry {border:1px solid #665033;border-radius:4px;background:#211923;}
+.oprpg-native.op-dialog .op-pick-entry>label {display:flex;flex-direction:row;align-items:center;gap:10px;padding:10px;margin:0;cursor:pointer;}
+.oprpg-native.op-dialog .op-pick-entry:has(input:checked) {border-color:#d8bc68;background:#332735;}
+.oprpg-native.op-dialog .op-pick-entry input[type=radio] {appearance:none;width:15px;height:15px;min-height:15px;flex:0 0 15px;margin:0;padding:0;border:1px solid #c6a345;border-radius:50%;background:transparent;}
+.oprpg-native.op-dialog .op-pick-entry input[type=radio]:checked {background:radial-gradient(circle,#d8bc68 0 40%,transparent 45%);}
+.oprpg-native.op-dialog .op-pick-entry input[type=radio]::before,
+.oprpg-native.op-dialog .op-pick-entry input[type=radio]::after {content:none;display:none;}
+.oprpg-native.op-dialog .op-pick-entry img {width:32px;height:32px;object-fit:contain;flex:0 0 32px;}
+.oprpg-native.op-dialog .op-pick-entry label>span {display:grid;gap:4px;min-width:0;flex:1;}
+.oprpg-native.op-dialog .op-pick-entry small {font-size:11px;color:#bdae93;}
+.oprpg-native.op-dialog .op-pick-entry details {padding:0 10px 8px;}
+.oprpg-native.op-dialog .op-pick-entry p {font-size:12px;line-height:1.5;overflow-wrap:anywhere;}
+.oprpg-native.op-dialog .op-final-value {font-size:25px;text-align:center;color:#eed18a;font-variant-numeric:tabular-nums;margin:8px 0 12px;}
+.oprpg-native.op-dialog .op-calculation ul {font-size:12px;line-height:1.6;padding-left:18px;margin:0;}
+.oprpg-native.op-dialog .op-hp-record {display:none;}
+.oprpg-native.op-dialog fieldset:has(select[name=hpMethod] option[value=record]:checked) .op-hp-record {display:flex;}
+.oprpg-native.op-rest-dialog:has(input[name=operation][value=start]:checked) .op-rest-recovery {display:none;}
+.oprpg-native.op-dialog .op-two-col {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
+@media(max-width:600px){.oprpg-native.op-dialog .op-two-col {grid-template-columns:1fr;}}
+
+/* Compact classic window grammar, implemented for native OP fields. */
+.oprpg-native.op-dialog .window-content{padding:12px;background:#15101b;border-top:0;}
+.oprpg-native.op-dialog :is(.op-choice,fieldset){border:1px solid #6e5834;border-radius:4px;background:#19131e;padding:8px 10px;margin:0 0 10px;gap:4px;}
+.oprpg-native.op-dialog :is(.standard-form,.dialog-content){gap:8px;}
+.oprpg-native.op-dialog :is(.op-choice,fieldset)>legend{font:700 11px Arial,sans-serif;text-transform:uppercase;letter-spacing:.04em;color:#d5b967;padding:0 6px;max-width:100%;overflow-wrap:anywhere;}
+.oprpg-native.op-dialog label:has(>:where(input:not([type=checkbox]):not([type=radio]):not([type=hidden]):not([type=range]),select:not([multiple]))){display:grid;grid-template-columns:minmax(0,2fr) minmax(0,3fr);align-items:center;column-gap:12px;row-gap:3px;margin:4px 0;min-height:28px;line-height:1.35;}
+.oprpg-native.op-dialog label:has(>textarea){display:flex;flex-direction:column;align-items:stretch;gap:5px;margin:7px 0;}
+.oprpg-native.op-dialog :where(input:not([type=checkbox]):not([type=radio]):not([type=hidden]):not([type=range]),select:not([multiple])){height:28px;min-height:28px;border-radius:3px;padding:3px 7px;font-size:12px;background:#110d16;border-color:#806c4d;}
+.oprpg-native.op-dialog textarea{min-height:86px;font-size:12px;line-height:1.5;border-color:#806c4d;}
+.oprpg-native.op-dialog .op-checkbox{margin:5px 0;gap:7px;min-height:24px;}
+.oprpg-native.op-dialog .op-checkbox input[type=checkbox]{flex:0 0 14px;width:14px;height:14px;min-height:14px;}
+.oprpg-native.op-dialog :is(.op-pair,.op-two-col,.op-three-col){gap:8px 12px;}
+.oprpg-native.op-dialog .op-pair>label:not(.op-checkbox),.oprpg-native.op-dialog .op-effect-row>label{display:flex;flex-direction:column;align-items:stretch;gap:3px;}
+.oprpg-native.op-dialog .op-effect-row{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1.4fr) minmax(60px,.7fr);gap:8px;padding:6px 0;border-bottom:1px solid #433629;}
+.oprpg-native.op-dialog :is(h2,h3){font:700 12px Arial,sans-serif;text-transform:uppercase;letter-spacing:.03em;color:#d5b967;margin:8px 0;}
+.oprpg-native.op-dialog p{margin:6px 0;}
+.oprpg-native.op-dialog .op-hint{font-size:11px;line-height:1.45;margin:5px 0 8px;}
+.oprpg-native.op-dialog details{padding:6px 8px;margin:6px 0;border-color:#4c3e2b;}
+.oprpg-native.op-dialog details[open]>summary{margin-bottom:6px;padding-bottom:5px;}
+.oprpg-native.op-dialog .op-pick-list{gap:0;padding:0;border:1px solid #57462f;border-radius:3px;}
+.oprpg-native.op-dialog .op-pick-entry{border:0;border-bottom:1px solid #46392c;border-radius:0;background:#1a141e;}
+.oprpg-native.op-dialog .op-pick-entry:last-child{border-bottom:0;}
+.oprpg-native.op-dialog .op-pick-entry>label{padding:7px 9px;gap:8px;min-height:34px;}
+.oprpg-native.op-dialog .op-pick-entry:has(input:checked){background:#322622;box-shadow:inset 3px 0 #c6a345;}
+.oprpg-native.op-dialog .op-pick-entry:hover{background:#29202b;}
+.oprpg-native.op-dialog .op-pick-entry label>span{gap:2px;}
+.oprpg-native.op-dialog .op-pick-entry details{border:0;background:transparent;margin:0;padding:0 9px 6px 32px;}
+.oprpg-native.op-dialog .op-pick-entry summary{font-size:10px;color:#b9a985;}
+.oprpg-native.op-dialog .op-final-value{font-size:24px;margin:4px 0 8px;}
+.oprpg-native.op-dialog .op-calculation ul{font-size:11px;line-height:1.5;}
+.oprpg-native.op-dialog .op-flow-summary{gap:5px 18px;padding:7px 9px;margin:0 0 10px;background:#211922;border-color:#59462d;}
+.oprpg-native.op-dialog .form-footer{padding:8px 0 0;gap:6px;background:#15101b;}
+.oprpg-native.op-dialog .form-footer button{min-height:28px;background:#241c23;color:#e2c77e;font-size:11px;border-color:#806538;}
+.oprpg-native.op-dialog .form-footer button:hover:not(:disabled){background:#3b2c22;color:#f5dca0;}
+.oprpg-native.op-dialog .form-footer button:is([data-action=yes],[data-action=ok],[type=submit]){background:#bda15c;color:#17120e;}
+.oprpg-native.op-dialog .form-footer button:is([data-action=yes],[data-action=ok],[type=submit]):hover:not(:disabled){background:#d7bd79;color:#17120e;}
+.oprpg-native.op-dialog .op-settings-footer{display:flex;justify-content:flex-end;padding-top:8px;border-top:1px solid #53402d;}
+.oprpg-native.op-dialog .op-settings-footer button{min-width:180px;}
+
+/* Item and vessel forms use the same small rows as the original editors. */
+.oprpg-native.oprpg-legacy :is(.op-item-original,.op-ship-original) .op-card{border-radius:4px;padding:10px 12px;margin-bottom:10px;}
+.oprpg-native.oprpg-legacy :is(.op-item-original,.op-ship-original) .op-card h3{font:700 11px Arial,sans-serif;text-transform:uppercase;letter-spacing:.04em;color:#d5b967;padding:6px 0;border-bottom:1px solid #55442e;margin:0 0 8px;}
+.oprpg-native.oprpg-legacy :is(.op-item-original,.op-ship-original) .op-card label:has(>:where(input:not([type=checkbox]):not([type=radio]):not([type=hidden]):not([type=range]),select:not([multiple]))){display:grid;grid-template-columns:minmax(0,2fr) minmax(0,3fr);align-items:center;gap:10px;margin:5px 0;}
+.oprpg-native.oprpg-legacy :is(.op-item-original,.op-ship-original) .op-card .op-pair>label:not(.op-checkbox){display:flex;flex-direction:column;align-items:stretch;gap:3px;}
+.oprpg-native.oprpg-legacy :is(.op-item-original,.op-ship-original) .op-card :where(input:not([type=checkbox]):not([type=radio]):not([type=hidden]):not([type=range]),select:not([multiple])){height:28px;min-height:28px;padding:3px 7px;font-size:12px;}
+.oprpg-native.oprpg-legacy .op-item-original .op-body{padding:12px;}
+.oprpg-native.oprpg-legacy .op-item-navigation{gap:0;padding:0 12px;border-block:1px solid #665033;background:#19131e;}
+.oprpg-native.oprpg-legacy .op-item-navigation button{background:transparent;border:0!important;border-radius:0!important;padding:8px 10px;min-height:32px!important;color:#bcad90;}
+.oprpg-native.oprpg-legacy .op-item-navigation button.active{color:#eed18a;box-shadow:inset 0 -2px #c6a345;}
+.oprpg-native.oprpg-legacy .op-item-navigation button[aria-pressed=true]{color:#eed18a;box-shadow:inset 0 -2px #c6a345;}
+.oprpg-native.oprpg-legacy .op-item-original .sheet-header{height:126px;min-height:126px;flex-basis:126px;padding:12px 24px;align-items:center;gap:18px;}
+.oprpg-native.oprpg-legacy .op-item-original .document-name{text-align:center;}
+.oprpg-native.oprpg-legacy .op-item-original .subtitles{justify-content:center;flex-wrap:wrap;gap:5px 12px;}
+.oprpg-native.oprpg-legacy .op-item-group h3{font:700 11px Arial,sans-serif;letter-spacing:.04em;text-transform:uppercase;color:#d5b967;}
+.oprpg-native.oprpg-legacy .op-item-original .op-step-row{gap:7px;padding:7px 0;border-bottom:1px solid #473a2b;}
+.oprpg-native.oprpg-legacy .op-item-original .op-step-row>span{flex:1;min-width:0;overflow-wrap:anywhere;}
+.oprpg-native.oprpg-legacy .op-item-original .op-step-row button{min-height:26px!important;padding:3px 7px;font-size:11px!important;}
+.oprpg-native:is(.oprpg-legacy,.op-dialog) :is(button,input,select,textarea):focus-visible{outline:2px solid #efcf78;outline-offset:1px;}
+.oprpg-native:is(.oprpg-legacy,.op-dialog) button:focus:not(:focus-visible){outline:none;box-shadow:none;}
+/* Keep conditional fields hidden despite the shared form-row layout. */
+.oprpg-native.op-dialog label.op-hp-record:has(>input){display:none!important;}
+.oprpg-native.op-dialog fieldset:has(select[name=hpMethod] option[value=record]:checked) label.op-hp-record{display:grid!important;}
+@media(max-width:600px){
+ .oprpg-native.op-dialog label:has(>:where(input:not([type=checkbox]):not([type=radio]):not([type=hidden]):not([type=range]),select:not([multiple]))){grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;}
+ .oprpg-native.op-dialog .op-three-col{grid-template-columns:1fr;}
+ .oprpg-native.op-dialog .op-effect-row{grid-template-columns:1fr;}
+}
+
+/* Research revision: classic identity, accessible targets and per-window layout. */
+@font-face{font-family:OPRoboto;src:url('../fonts/roboto/Roboto-Regular.woff2') format('woff2');font-weight:400;}
+@font-face{font-family:OPRoboto;src:url('../fonts/roboto/Roboto-Bold.woff2') format('woff2');font-weight:700;}
+.oprpg-native{font-family:OPRoboto,Roboto,Arial,sans-serif;}
+.oprpg-native :is(input,select,textarea,button){font-family:inherit;}
+.oprpg-native.oprpg-legacy.sheet:not(.minimized)>.window-header{background:transparent;border:0;position:relative;z-index:3;}
+.oprpg-native.oprpg-legacy.sheet:not(.minimized)>.window-header .window-title{visibility:hidden;}
+.oprpg-native.oprpg-legacy.sheet:not(.minimized)>.window-content{margin-top:calc(-1 * var(--header-height,34px));}
+.oprpg-native.oprpg-legacy.sheet.minimized>.window-header .window-title{visibility:visible;}
+.oprpg-native.oprpg-legacy .op-edit-mode{width:28px;height:28px;min-height:28px;padding:0;display:inline-flex;align-items:center;justify-content:center;}
+.oprpg-native.oprpg-legacy .op-edit-mode[aria-pressed=true]{background:#bda15c;color:#17120e;}
+.oprpg-native.oprpg-legacy .portrait:not(.token) img{object-fit:cover;object-position:top center;}
+.oprpg-native.oprpg-legacy .portrait.token{border-color:transparent;}
+.oprpg-native.oprpg-legacy .portrait.token img{object-fit:contain;background:transparent;}
+.oprpg-native.oprpg-legacy .skills li:not(.skill-separator){grid-template-columns:24px 27px minmax(0,1fr) 25px 24px;}
+.oprpg-native.oprpg-legacy .proficiency-dot{width:24px;height:28px;min-width:24px;cursor:pointer;border-radius:3px;}
+.oprpg-native.oprpg-legacy .proficiency-dot:focus-within{outline:2px solid #efcf78;outline-offset:0;}
+.oprpg-native.oprpg-legacy .config-button{min-width:24px;min-height:24px;}
+.oprpg-native.op-dialog select[multiple],.oprpg-native.oprpg-legacy .op-card select[multiple]{height:auto;min-height:130px;padding:5px;}
+.oprpg-native.op-dialog label:has(>select[multiple]){display:flex;flex-direction:column;align-items:stretch;gap:5px;}
+.oprpg-native.op-dialog [hidden]{display:none!important;}
+.oprpg-native.op-dialog .op-form-error{padding:10px;border:1px solid #e29b83;background:#38202a;color:#ffe4d8;line-height:1.5;}
+.oprpg-native.op-dialog .op-search-label{margin-top:0;}
+.oprpg-native.op-dialog .op-pick-entry:focus-within{outline:2px solid #efcf78;outline-offset:-2px;}
+.oprpg-native.op-menu .form-footer{display:grid;grid-template-columns:1fr;gap:7px;}
+.oprpg-native.op-menu .form-footer button{justify-content:flex-start;min-height:36px;padding-inline:12px;}
+.oprpg-native.op-menu .form-footer button[data-action=opCancel]{margin-top:8px;justify-content:center;}
+.oprpg-native.oprpg-legacy .op-enriched-content{font-size:13px;line-height:1.6;overflow-wrap:anywhere;}
+.oprpg-native.oprpg-legacy .op-enriched-content img{max-width:100%;height:auto;}
+.oprpg-native.op-dialog .window-content,.oprpg-native.oprpg-legacy .window-content{container:op-window/inline-size;}
+@container op-window (max-width:520px){
+ .oprpg-native.op-dialog :is(.op-pair,.op-two-col,.op-three-col,.op-effect-row){grid-template-columns:minmax(0,1fr);}
+ .oprpg-native.op-dialog label:has(>:where(input:not([type=checkbox]):not([type=radio]),select)){grid-template-columns:minmax(0,1fr);gap:4px;}
+ .oprpg-native.oprpg-legacy :is(.op-item-original,.op-ship-original) .op-pair{grid-template-columns:minmax(0,1fr);}
+}
+@container op-window (max-width:900px){
+ .oprpg-native.oprpg-legacy .classic-details{grid-template-columns:minmax(0,1fr);}
+ .oprpg-native.oprpg-legacy .sheet-header{padding-inline:24px;}
+ .oprpg-native.oprpg-legacy .sheet-header .right{gap:8px;}
+ .oprpg-native.oprpg-legacy .sheet-header-buttons{flex-wrap:wrap;max-width:120px;}
+}
+
+/* Finish the classic shield with a real shaped outline rather than a clipped box border. */
+.oprpg-native.oprpg-legacy .ac-badge{position:relative;isolation:isolate;clip-path:none;background:transparent!important;border:0;flex:0 0 68px;}
+.oprpg-native.oprpg-legacy .ac-badge::before,.oprpg-native.oprpg-legacy .ac-badge::after{content:'';position:absolute;clip-path:polygon(5% 0,95% 0,90% 73%,50% 100%,10% 73%);pointer-events:none;}
+.oprpg-native.oprpg-legacy .ac-badge::before{inset:0;background:#b1954c;z-index:-2;}
+.oprpg-native.oprpg-legacy .ac-badge::after{inset:2px;background:#17111d;z-index:-1;}
+.oprpg-native.oprpg-legacy .ac-badge>label{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;margin:0;}
+.oprpg-native.oprpg-legacy .op-resistance-label{font-size:9px;letter-spacing:.05em;color:#d2b978;line-height:12px;}
+.oprpg-native.oprpg-legacy .op-origin-card{position:relative;min-width:0;}
+.oprpg-native.oprpg-legacy .op-origin-card .pill-lg{margin:0;padding-right:42px;}
+.oprpg-native.oprpg-legacy .op-origin-card>.config-button{position:absolute;right:10px;top:50%;transform:translateY(-50%);}
+
+/* Reference photographs: classic character proportions and compact item editors. */
+.oprpg-native.oprpg-legacy .legacy-character .sheet-header{padding:48px 38px 20px;height:184px;min-height:184px;flex-basis:184px;}
+.oprpg-native.oprpg-legacy .legacy-character .sheet-header .document-name{font-size:42px;letter-spacing:1px;}
+.oprpg-native.oprpg-legacy .legacy-character .sheet-header .class{font-size:14px;letter-spacing:0;}
+.oprpg-native.oprpg-legacy .legacy-character .sheet-header .right{align-self:center;gap:12px;}
+.oprpg-native.oprpg-legacy .legacy-character .sheet-header-buttons{flex-wrap:nowrap;max-width:none;margin-top:0;}
+.oprpg-native.oprpg-legacy .sheet-header .level-badge{position:relative;isolation:isolate;border:4px double #b3a27e;border-radius:45%;background:#202027;color:#f3f3ef;font:bold 30px Roboto,Arial,sans-serif;box-shadow:0 0 0 3px #27231d,0 0 0 4px #ab9670;}
+.oprpg-native.oprpg-legacy .sheet-header .level-badge::before{content:'';position:absolute;inset:-10px;z-index:-1;border:2px solid #ab9670;transform:rotate(45deg);border-radius:18%;background:repeating-conic-gradient(from 0deg,#c1ad87 0deg 5deg,#524b3c 5deg 15deg);}
+.oprpg-native.oprpg-legacy .sheet-header .level-badge small{position:absolute;top:-25px;font:9px Roboto,Arial,sans-serif;color:#e0c160;}
+.oprpg-native.oprpg-legacy .legacy-character .ability-scores{margin:-26px 46px 12px 260px;}
+.oprpg-native.oprpg-legacy .ability-scores :is(.rows,.top,.bottom){gap:8px;}
+.oprpg-native.oprpg-legacy .ability-score{width:58px;min-width:48px;min-height:66px;}
+.oprpg-native.oprpg-legacy .legacy-character .classic-details{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;}
+.oprpg-native.oprpg-legacy .legacy-tabs{padding-left:12px;padding-right:42px;}
+.oprpg-native.oprpg-legacy .sidebar .card{background:linear-gradient(#26252a,#161111);}
+.oprpg-native.oprpg-legacy .portrait{height:232px;padding:6px;border:2px solid #ab9146;}
+.oprpg-native.oprpg-legacy .stats .top{position:relative;height:48px;margin-top:0;gap:7px;}
+.oprpg-native.oprpg-legacy .ac-badge{height:68px;align-self:flex-start;margin-top:-14px;filter:drop-shadow(0 2px 2px #000);}
+.oprpg-native.oprpg-legacy .ac-badge::before{background:repeating-linear-gradient(35deg,#c1b591 0 3px,#645d49 3px 5px,#b5a784 5px 8px);}
+.oprpg-native.oprpg-legacy .ac-badge::after{inset:6px;background:#26262a;}
+.oprpg-native.oprpg-legacy .ac-badge input{font:bold 25px Roboto,Arial,sans-serif;}
+.oprpg-native.oprpg-legacy .op-resistance-label{font-size:8px;line-height:10px;}
+.oprpg-native.oprpg-legacy .lozenges{display:grid;grid-template-columns:1fr 1fr;gap:0 30px;margin:0 0 6px;}
+.oprpg-native.oprpg-legacy .lozenge.proficiency{grid-column:2;grid-row:1;}
+.oprpg-native.oprpg-legacy .lozenge.movement{grid-column:1/-1;grid-row:2;margin-top:-13px;justify-self:center;}
+.oprpg-native.oprpg-legacy .lozenge .value{font:bold 20px Roboto,Arial,sans-serif;color:#fff;background:linear-gradient(#b8ad8a,#8c8266);line-height:24px;}
+.oprpg-native.oprpg-legacy .lozenge .label{color:#d5b957;font-size:9px;font-weight:bold;}
+.oprpg-native.oprpg-legacy .meter-group{margin:8px 0;}
+.oprpg-native.oprpg-legacy .meter-group>.label{font-size:10px;letter-spacing:0;color:#d5b957;font-weight:bold;}
+.oprpg-native.oprpg-legacy .meter{height:31px;margin:3px 0;border-color:#bd9f50;}
+.oprpg-native.oprpg-legacy .meter.hit-points .progress{background:linear-gradient(90deg,#2a6c43,#3caa64);}
+.oprpg-native.oprpg-legacy .meter.power .progress{background:linear-gradient(90deg,#2873a1,#409fd0);}
+.oprpg-native.oprpg-legacy .meter.dice .progress{background:linear-gradient(90deg,#7f2a21,#b73528);}
+.oprpg-native.oprpg-legacy .meter>.label{justify-content:flex-start;gap:3px;padding-left:6px;font-weight:bold;}
+.oprpg-native.oprpg-legacy .meter input{width:30px;text-align:left;font-weight:bold;padding:0;}
+.oprpg-native.oprpg-legacy .meter.hit-points>.label{right:56px;}
+.oprpg-native.oprpg-legacy .op-temp-hp{position:absolute;right:0;top:0;bottom:0;width:54px;display:grid;place-content:center;background:#17151b;border-left:1px dashed #b89b50;color:#aaa4b4;font:10px Roboto,Arial,sans-serif;}
+.oprpg-native.oprpg-legacy .favorites{padding:10px 6px;}
+.oprpg-native.oprpg-legacy .favorites h3{border-bottom:1px solid #a68732;padding-bottom:6px;color:#d5b957;font-size:13px;}
+.oprpg-native.oprpg-legacy .favorites .empty{border:2px dashed #615853;padding:12px 4px;text-align:center;font-weight:bold;}
+.oprpg-native.oprpg-legacy .skills .skill-separator{font-size:13px;font-weight:bold;letter-spacing:.06em;}
+.oprpg-native.oprpg-legacy .skills .name{font-size:12px;font-weight:bold;}
+.oprpg-native.oprpg-legacy :is(.bonus,.passive){font-size:12px;}
+.oprpg-native.oprpg-legacy .pill-lg{border-radius:3px;background:linear-gradient(115deg,#211916,#17141b 60%,#292630);font-family:Georgia,serif;}
+
+/* Fine neutral texture, slate controls and fieldset legends from the item references. */
+.oprpg-native.oprpg-legacy .op-item-original,.oprpg-native.op-dialog .window-content{background-color:#18191b;background-image:repeating-linear-gradient(135deg,#ffffff03 0 1px,transparent 1px 3px);color:#c9cace;}
+.oprpg-native.oprpg-legacy .op-item-original .sheet-header{height:128px;min-height:128px;flex-basis:128px;padding:16px 20px;gap:16px;border:0;background:linear-gradient(transparent,#18191b),repeating-linear-gradient(45deg,#77766e0a 0 2px,transparent 2px 7px);}
+.oprpg-native.oprpg-legacy .op-item-original .sheet-header .left{width:96px;flex:0 0 96px;}
+.oprpg-native.oprpg-legacy .op-item-original .document-image{height:96px;width:96px;border:2px solid #9b8e68;border-radius:8px;background:#09090b;}
+.oprpg-native.oprpg-legacy .op-item-original .document-name{text-align:center;color:#d5d5d7;font-size:32px;}
+.oprpg-native.oprpg-legacy .op-item-original .subtitles{justify-content:center;gap:7px;color:#bfc0c5;font-size:12px;flex-wrap:wrap;}
+.oprpg-native.oprpg-legacy .op-item-original .subtitles li+li::before{content:'• ';}
+.oprpg-native.oprpg-legacy .op-item-header-values{display:flex;flex-direction:column;gap:6px;align-self:flex-start;margin-top:14px;text-align:right;color:#a4a4a7;font:11px Roboto,Arial,sans-serif;}
+.oprpg-native.oprpg-legacy .op-weapon-properties{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:4px 0 10px;font:11px Roboto,Arial,sans-serif;}
+.oprpg-native.oprpg-legacy .op-weapon-properties i{background:#34363f;color:#a69a75;padding:3px;border-radius:3px;}
+.oprpg-native.oprpg-legacy .op-item-navigation{background:none;border:0;gap:8px;padding:0 12px 12px;flex-wrap:wrap;}
+.oprpg-native.oprpg-legacy .op-item-navigation button{color:#999b9e;font-size:11px!important;font-weight:bold;padding:7px 2px;min-width:70px;}
+.oprpg-native.oprpg-legacy .op-item-navigation button.active{color:#cdced0;box-shadow:inset 0 -1px #998b61;}
+.oprpg-native.oprpg-legacy .op-item-body{padding:8px 14px 14px;}
+.oprpg-native.oprpg-legacy .op-item-original .op-card,.oprpg-native.op-dialog .op-choice{position:relative;border:1px solid #444955;border-radius:3px;box-shadow:none;background:transparent;padding:8px 10px;margin:0 0 12px;min-width:0;}
+.oprpg-native.oprpg-legacy .op-item-original .op-card legend,.oprpg-native.op-dialog .op-choice legend{font:700 11px Roboto,Arial,sans-serif;text-transform:uppercase;color:#9e916d;padding:0 5px;}
+.oprpg-native.oprpg-legacy .op-item-original .op-card label{font:700 13px Georgia,serif;color:#c9cace;}
+.oprpg-native.oprpg-legacy .op-item-original .op-card :is(input:not([type=checkbox]),select,textarea){border:1px solid #393a43;background:#252830;color:#c9cace;border-radius:3px;font:12px Roboto,Arial,sans-serif;}
+.oprpg-native.oprpg-legacy .op-item-original .op-card :is(input:not([type=checkbox]),select){height:27px;min-height:27px;}
+.oprpg-native.oprpg-legacy .op-item-original .op-card textarea{min-height:76px;}
+.oprpg-native.oprpg-legacy .op-item-original .op-hint{font:11px/1.5 Roboto,Arial,sans-serif;color:#999b9f;margin:5px 0 8px;}
+.oprpg-native.oprpg-legacy .op-item-original .op-checkbox{display:flex;flex-direction:row-reverse;justify-content:space-between;gap:12px;}
+.oprpg-native.oprpg-legacy .op-item-original input[type=checkbox]{accent-color:#a99c76;}
+.oprpg-native.oprpg-legacy .op-item-original .op-pair{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 10px;}
+.oprpg-native.oprpg-legacy .op-activity-navigation{display:flex;gap:12px;justify-content:space-between;margin:0 0 14px;}
+.oprpg-native.oprpg-legacy .op-activity-navigation button{flex:1;border:0;background:transparent;font:700 12px Roboto,Arial,sans-serif;color:#959799;padding:6px 2px;min-height:30px;box-shadow:none;}
+.oprpg-native.oprpg-legacy .op-activity-navigation button[aria-pressed=true]{color:#d0d1d4;text-decoration:underline;text-decoration-color:#a9996d;text-underline-offset:5px;}
+.oprpg-native.oprpg-legacy .op-item-description{background:#252830!important;border:0!important;}
+.oprpg-native.oprpg-legacy .op-item-description summary{text-align:center;color:#c9cace;font:bold 15px Georgia,serif;cursor:pointer;padding:4px;}
+.oprpg-native.oprpg-legacy .op-item-original .op-enriched-content{font:12px/1.5 Roboto,Arial,sans-serif;padding:5px 3px;}
+.oprpg-native.oprpg-legacy .op-item-summary-tags{display:flex;flex-wrap:wrap;gap:5px;}
+.oprpg-native.oprpg-legacy .op-item-summary-tags span{border:1px solid #494b52;border-radius:3px;padding:2px 5px;color:#bfc0c4;font:700 10px Roboto,Arial,sans-serif;text-transform:uppercase;}
+.oprpg-native.op-dialog .op-choice legend{font-size:11px;}
+.oprpg-native.op-dialog :is(input:not([type=checkbox]),select,textarea){background:#252830;border-color:#444955;color:#c9cace;}
+@container op-window (max-width:760px){
+ .oprpg-native.oprpg-legacy .legacy-character .classic-details{grid-template-columns:minmax(0,1fr);}
+ .oprpg-native.oprpg-legacy .legacy-character .sheet-header{padding-inline:24px;}
+}
+@container op-window (max-width:420px){
+ .oprpg-native.oprpg-legacy .op-item-original .op-pair{grid-template-columns:minmax(0,1fr);}
+ .oprpg-native.oprpg-legacy .op-item-original .op-card label:has(>select,>input:not([type=checkbox])){grid-template-columns:minmax(0,1fr);}
+ .oprpg-native.oprpg-legacy .op-item-original .sheet-header{padding-inline:12px;gap:10px;}
+}
+
+/* Port of reference less/v2/forms.less, items.less and sheets.less.
+   The native form-group/form-fields markup replaces the former nested-label layout. */
+@font-face{font-family:OPSlab;src:url('../fonts/roboto-slab/RobotoSlab-Regular.ttf') format('truetype');font-weight:400;}
+@font-face{font-family:OPSlab;src:url('../fonts/roboto-slab/RobotoSlab-Bold.ttf') format('truetype');font-weight:700;}
+@font-face{font-family:OPCondensed;src:url('../fonts/roboto-condensed/RobotoCondensed-Regular.woff2') format('woff2');font-weight:400;}
+@font-face{font-family:OPCondensed;src:url('../fonts/roboto-condensed/RobotoCondensed-Bold.woff2') format('woff2');font-weight:700;}
+.oprpg-native.oprpg-legacy.item .window-content,.oprpg-native.op-dialog .window-content{background:#0d0b0b url('/ui/denim075.png');}
+.oprpg-native.oprpg-legacy .op-item-original{background:transparent;color:#cfd2da;}
+.oprpg-native.oprpg-legacy.item:not(.op-native-activity):not(.minimized)::before{content:'';position:absolute;inset:0 0 auto;height:150px;background:linear-gradient(135deg,#24242b,#16141d) top center/cover;opacity:.2;mask-image:linear-gradient(black,transparent);pointer-events:none;}
+.oprpg-native.oprpg-legacy .op-item-original .sheet-header{position:relative;background:transparent;min-height:104px;height:104px;flex-basis:104px;margin-top:8px;padding:0 24px;gap:8px;align-items:stretch;}
+.oprpg-native.oprpg-legacy .op-item-original .sheet-header>.middle{display:flex;flex-direction:column;justify-content:space-evenly;align-items:center;}
+.oprpg-native.oprpg-legacy .op-item-original .document-name{font-weight:bold;}
+.oprpg-native.oprpg-legacy .op-item-original .subtitles{font:14px OPCondensed,Arial,sans-serif;min-height:32px;gap:4px;align-content:center;}
+.oprpg-native.oprpg-legacy .op-item-header-values{flex:0 0 60px;gap:8px;align-self:stretch;padding-top:10px;margin:0;font:13px OPCondensed,Arial,sans-serif;}
+.oprpg-native.oprpg-legacy .op-item-original .op-card{display:flex;flex-direction:column;gap:4px;padding:8px 10px 10px;border:1px solid #454955;border-radius:4px;margin-bottom:12px;}
+.oprpg-native.oprpg-legacy .op-item-original .op-card .form-group{display:flex;flex-wrap:wrap;align-items:center;gap:0;margin:0;}
+.oprpg-native.oprpg-legacy .op-item-original .op-card .form-group>label{display:block;flex:2;line-height:26px;margin:0;padding:0;font:700 12px/26px OPSlab,Georgia,serif;}
+.oprpg-native.oprpg-legacy .op-item-original .op-card .form-fields{display:flex;align-items:center;flex:3;gap:4px;min-width:0;}
+.oprpg-native.oprpg-legacy .op-item-original .op-card .form-fields>:is(input,select,textarea){width:100%;min-width:0;flex:1;border:0;background:#252830;font:11px OPRoboto,Arial,sans-serif;height:26px;min-height:26px;color:#cfd2da;padding:3px 7px;}
+.oprpg-native.oprpg-legacy .op-item-original .op-card .form-fields>textarea{height:76px;resize:vertical;}
+.oprpg-native.oprpg-legacy .op-item-original .op-card .op-pair>.form-group{display:flex;flex-direction:column;align-items:stretch;gap:2px;}
+.oprpg-native.oprpg-legacy .op-item-original .op-card .op-pair>.form-group>label{font:700 10px OPRoboto,Arial,sans-serif;text-transform:uppercase;line-height:12px;}
+.oprpg-native.oprpg-legacy .op-item-original .op-card .op-pair .form-fields{flex:auto;}
+.oprpg-native.oprpg-legacy .op-item-original .op-hint{font:11px/16px OPRoboto,Arial,sans-serif;color:#9a9b9e;}
+.oprpg-native.oprpg-legacy .op-item-original .op-checkbox{font:700 12px OPSlab,Georgia,serif;min-height:26px;margin:0;}
+.oprpg-native.oprpg-legacy .op-item-original .op-card legend{font:700 11px OPRoboto,Arial,sans-serif;padding:0 6px;}
+.oprpg-native.oprpg-legacy .op-activities-list{list-style:none;margin:0;padding:0;}
+.oprpg-native.oprpg-legacy .op-activities-list li{display:flex;align-items:center;gap:10px;border:1px solid #454955;border-radius:4px;padding:8px;margin-bottom:8px;background:#252830;}
+.oprpg-native.oprpg-legacy .op-activities-list li>div,.oprpg-native.oprpg-legacy .op-activities-list li>strong{flex:1;}
+.oprpg-native.oprpg-legacy .op-activities-list small{display:block;color:#9a9b9e;margin-top:3px;}
+.oprpg-native.oprpg-legacy .op-activities-list button{width:28px;height:28px;min-height:28px;padding:0;background:transparent;border:0;}
+.oprpg-native.op-native-activity{max-height:85vh;}
+.oprpg-native.op-native-activity .window-content{overflow:auto;}
+.oprpg-native.op-native-activity:not(.minimized)>.window-content{margin-top:0;}
+.oprpg-native.op-native-activity .op-activity-title{text-align:center;font:700 26px OPCondensed,Arial,sans-serif;border:0;margin:6px 0 12px;color:#cfd2da;}
+.oprpg-native.op-native-activity .op-item-body{overflow:visible;padding:0 14px 14px;}
+.oprpg-native.op-native-activity .op-activity-navigation{margin-bottom:12px;}
+.oprpg-native.op-native-activity .op-activity-editor{height:auto;}
+.oprpg-native.oprpg-legacy .sheet-header .level-badge{background:transparent url('../ui/level-badge.webp') center/contain no-repeat;border:0;border-radius:0;box-shadow:none;}
+.oprpg-native.oprpg-legacy .sheet-header .level-badge::before{display:none;}
+.oprpg-native.oprpg-legacy .ac-badge{background:transparent url('../ui/ac-badge.webp') center/contain no-repeat!important;height:68px;width:68px;margin-top:-21px;}
+.oprpg-native.oprpg-legacy .ac-badge::before,.oprpg-native.oprpg-legacy .ac-badge::after{display:none;}
+.oprpg-native.oprpg-legacy .ac-badge>label{height:62px;}
+.oprpg-native.oprpg-legacy .op-resistance-label{position:absolute;bottom:5px;font-size:7px;line-height:8px;}
+.oprpg-native.oprpg-legacy .pill-lg.race{background:#17131c linear-gradient(135deg,#24242b,#16141d) right center/auto 100% no-repeat;}
+.oprpg-native.oprpg-legacy .pill-lg.background{background:#17131c linear-gradient(135deg,#24242b,#16141d) right center/auto 100% no-repeat;}
+.oprpg-native.oprpg-legacy .pill-lg.type{background:#17131c linear-gradient(135deg,#24242b,#16141d) right center/auto 100% no-repeat;}
+.oprpg-native.op-dialog .op-choice{display:flex;flex-direction:column;gap:4px;border-radius:4px;}
+.oprpg-native.op-dialog .op-choice legend{font:700 11px OPRoboto,Arial,sans-serif;padding-inline:6px;}
+.oprpg-native.op-dialog label{font-family:OPSlab,Georgia,serif;font-size:12px;font-weight:700;}
+.oprpg-native.op-dialog :is(input,select,textarea){font-family:OPRoboto,Arial,sans-serif;font-size:11px;}
+.oprpg-native.op-dialog .op-hint{font:11px/16px OPRoboto,Arial,sans-serif;}
+.oprpg-native.oprpg-legacy .op-item-group>header{display:flex;align-items:center;justify-content:space-between;background:#252830;padding:6px 10px;margin:-12px -12px 8px;border-bottom:1px solid #454955;}
+.oprpg-native.oprpg-legacy .op-item-group>header h3{border:0;margin:0;padding:0;}
+.oprpg-native.oprpg-legacy .op-item-group [data-list-collapse]{min-height:28px;border:0;background:transparent;font:700 12px OPRoboto,Arial,sans-serif;color:#cfd2da;}
+.oprpg-native.oprpg-legacy .op-item-group [data-list-collapse][aria-expanded=false] i{transform:rotate(-90deg);}
+.oprpg-native.oprpg-legacy .op-list-controls{display:flex;align-items:center;gap:5px;margin-bottom:8px;flex-wrap:wrap;}
+.oprpg-native.oprpg-legacy .op-list-search{display:flex;align-items:center;gap:5px;flex:1 1 130px;margin:0;color:#9a9b9e;}
+.oprpg-native.oprpg-legacy .op-list-search input{min-width:0;width:100%;}
+.oprpg-native.oprpg-legacy .op-list-controls :is(input,select){height:26px;min-height:26px;font:11px OPRoboto,Arial,sans-serif;background:#252830;border:1px solid #454955;}
+.oprpg-native.oprpg-legacy .op-list-controls select{width:auto;max-width:110px;}
+.oprpg-native.oprpg-legacy [data-list-status]{font:10px OPRoboto,Arial,sans-serif;color:#b7aa8c;}
+.oprpg-native.oprpg-legacy .op-item-group .item-row{padding:8px 0;border-bottom:1px solid #454955;}
+.oprpg-native.oprpg-legacy .op-item-group :is(.op-equip-control,.op-favorite-control){width:26px;min-width:26px;min-height:26px;padding:0;border:0;background:transparent;color:#86878d;}
+.oprpg-native.oprpg-legacy .op-item-group :is(.op-equip-control,.op-favorite-control)[aria-pressed=true]{color:#d9b954;}
+.oprpg-native.oprpg-legacy .proficiency-dot[data-factor="0.5"] input:checked{background:linear-gradient(90deg,#d9b954 50%,transparent 50%);}
+.oprpg-native.oprpg-legacy .proficiency-dot[data-factor="1.5"] input:checked{background:linear-gradient(90deg,#d9b954 50%,#766641 50%);outline:1px solid #d9b954;outline-offset:2px;}
+.oprpg-native.oprpg-legacy .proficiency-dot[data-factor="2"] input:checked{outline:1px solid #d9b954;outline-offset:2px;box-shadow:inset 0 0 0 2px #120d19;}
+.oprpg-native .op-trait-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 10px;}
+.oprpg-native.op-dialog .op-trait-grid .op-checkbox{font:11px OPCondensed,Arial,sans-serif;min-height:26px;margin:0;}
+.oprpg-native.oprpg-legacy .op-haki-talents small{display:block;color:#a9a39b;font-size:10px;}
+@container op-window (max-width:420px){.oprpg-native .op-trait-grid{grid-template-columns:1fr;}}
+@container op-window (max-width:380px){
+ .oprpg-native.oprpg-legacy .op-item-original .op-card .form-group{flex-direction:column;align-items:stretch;}
+ .oprpg-native.oprpg-legacy .op-item-original .sheet-header{padding-inline:12px;}
+}
+/* NPC header has editable block values; keep the attribute row below them. */
+.oprpg-native.oprpg-legacy.npc .legacy-character .op-npc-header.sheet-header{height:auto;min-height:230px;flex:0 0 auto;padding:18px;align-items:center;}
+.oprpg-native.oprpg-legacy.npc .legacy-character .op-npc-header+.ability-scores{margin:12px 46px 18px 246px;height:72px;flex:0 0 72px;}
+.oprpg-native.oprpg-legacy.npc .op-npc-header .portrait{height:165px;width:145px;}
+/* Keep all three statistic labels outside the neighbouring lozenges. */
+.oprpg-native.oprpg-legacy .lozenges{row-gap:6px;}
+.oprpg-native.oprpg-legacy .lozenge.movement{margin-top:0;}
+.oprpg-native.oprpg-legacy [data-action="chooseProfession"]{white-space:nowrap;min-width:140px;}
+/* Old edit-mode switch: independent native button, original track/thumb geometry. */
+.oprpg-native.oprpg-legacy .window-header button.header-control.op-edit-mode{position:relative;flex:0 0 36px;width:36px;height:20px;min-height:20px;margin-right:auto;padding:3px;border:0;border-radius:14px;background:#24252c;box-shadow:0 0 8px #0007;display:block;}
+.oprpg-native.oprpg-legacy .window-header .op-edit-thumb{display:flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:#fff;color:#17171c;transition:transform .2s ease;}
+.oprpg-native.oprpg-legacy .window-header .op-edit-thumb i{font-size:9px;}
+.oprpg-native.oprpg-legacy .window-header .op-edit-mode[aria-checked=true]{background:#ab9460;}
+.oprpg-native.oprpg-legacy .window-header .op-edit-mode[aria-checked=true] .op-edit-thumb{transform:translateX(16px);color:#a78c42;}
+/* Techniques keep the original compact column layout and a single search toolbar. */
+.oprpg-native.oprpg-legacy .op-techniques-compact{font-family:'Roboto Condensed',Roboto,Arial,sans-serif;}
+.oprpg-native.oprpg-legacy .op-technique-search{display:flex;align-items:center;gap:6px;height:40px;padding:0 10px;margin:0 0 16px;border:1px solid #624528;border-radius:4px;background:#170f0e;}
+.oprpg-native.oprpg-legacy .op-technique-search input{flex:1;min-width:0;height:30px;padding:0;background:transparent;border:0;box-shadow:none;}
+.oprpg-native.oprpg-legacy .op-technique-search>i{color:#a6936e;}
+.oprpg-native.oprpg-legacy .op-techniques-compact button.unbutton{padding:0;background:none;border:0;box-shadow:none;min-height:24px;color:#b9b6b0;}
+.oprpg-native.oprpg-legacy .op-technique-search button{flex:0 0 22px;width:22px;}
+.oprpg-native.oprpg-legacy .op-technique-search [data-technique-sort]{border-left:1px solid #746040;color:#d1b566;padding-left:5px;}
+.oprpg-native.oprpg-legacy .op-technique-section{margin:0 0 16px;border:1px solid #44312a;border-radius:5px;overflow:hidden;background:#211717;}
+.oprpg-native.oprpg-legacy .op-technique-columns{display:grid;grid-template-columns:minmax(130px,1fr) 60px 68px 70px 52px 58px;align-items:center;gap:3px;padding:4px 6px;text-align:center;}
+.oprpg-native.oprpg-legacy .op-technique-section>header{min-height:30px;background:linear-gradient(#1c1d30,#191928);color:#d0b36d;font:bold 10px 'Roboto Condensed',Arial,sans-serif;}
+.oprpg-native.oprpg-legacy .op-technique-section h3{margin:0;font:bold 14px 'Roboto Slab',Georgia,serif;text-align:left;}
+.oprpg-native.oprpg-legacy .op-technique-section ul{list-style:none;padding:0;margin:0;}
+.oprpg-native.oprpg-legacy .op-technique-section li{min-height:42px;border-bottom:1px solid #49332a;font-size:12px;color:#ded7cb;}
+.oprpg-native.oprpg-legacy .op-technique-section li:last-child{border-bottom:0;}
+.oprpg-native.oprpg-legacy .op-techniques-compact .op-technique-name{display:flex;align-items:center;gap:6px;text-align:left;min-width:0;color:#e3dbcf;font:bold 13px 'Roboto Slab',Georgia,serif;}
+.oprpg-native.oprpg-legacy .op-technique-name img{width:30px;height:30px;flex:0 0 30px;object-fit:cover;border:1px solid #382920;}
+.oprpg-native.oprpg-legacy .op-technique-name span{overflow-wrap:anywhere;}
+.oprpg-native.oprpg-legacy .op-techniques-compact .op-technique-roll{font-weight:bold;color:#e4d5bd;}
+.oprpg-native.oprpg-legacy .op-technique-tools{display:flex;justify-content:center;gap:7px;}
+.oprpg-native.oprpg-legacy .op-technique-tools button{width:16px;}
+.oprpg-native.oprpg-legacy .op-technique-add{font-size:12px;color:#c8b37b;padding:6px 0;}
+.oprpg-native.oprpg-legacy .op-technique-add summary{cursor:pointer;}
+.oprpg-native.oprpg-legacy .op-techniques-compact [hidden]{display:none!important;}
+@media(prefers-reduced-motion:reduce){.oprpg-native.oprpg-legacy .window-header .op-edit-thumb{transition:none;}}
+.oprpg-native.oprpg-legacy .op-techniques-compact .op-technique-name{justify-content:flex-start;width:100%;}
+.oprpg-native.oprpg-legacy .op-technique-search input::-webkit-search-cancel-button{-webkit-appearance:none;appearance:none;}
+/* Header composition follows the original character sheet; mechanics remain native. */
+.oprpg-native.oprpg-legacy.actor.character:not(.npc) .legacy-character>.sheet-header{height:214px;min-height:214px;flex:0 0 214px;padding:68px 46px 32px;display:grid;grid-template-columns:minmax(0,1fr) 248px;align-items:center;gap:12px;background:linear-gradient(to bottom,#080b1000 45%,#100d1599 84%,#100d15 100%),var(--op-old-header,none) center/cover no-repeat;}
+.oprpg-native.oprpg-legacy.actor.character:not(.npc) .sheet-header .left{min-width:0;display:flex;flex-direction:column;gap:4px;}
+.oprpg-native.oprpg-legacy.actor.character:not(.npc) .sheet-header .document-name{font-size:46px;letter-spacing:2px;line-height:1.15;text-shadow:2px 2px 2px #000;filter:none;}
+.oprpg-native.oprpg-legacy.actor.character:not(.npc) .sheet-header .document-name input{font:inherit;height:54px;padding:0;margin:0;background:transparent;border:0;}
+.oprpg-native.oprpg-legacy.actor.character:not(.npc) .sheet-header .class{font-size:14px;line-height:18px;min-height:18px;color:#d5b85e;font-weight:bold;}
+.oprpg-native.oprpg-legacy.actor.character:not(.npc) .sheet-header .right{position:relative;display:flex;flex-direction:row-reverse;align-items:center;align-self:center;gap:18px;transform:translateY(-24px);}
+.oprpg-native.oprpg-legacy.actor.character:not(.npc) .sheet-header .level-badge{width:78px;height:78px;flex:0 0 78px;font-size:32px;}
+.oprpg-native.oprpg-legacy.actor.character:not(.npc) .sheet-header-buttons{gap:6px;padding-right:0;}
+.oprpg-native.oprpg-legacy.actor.character:not(.npc) .sheet-header-buttons .gold-button{width:30px;height:30px;min-height:30px;background:#090808;border:1px solid #c5ad6b;box-shadow:0 0 0 2px #050505;border-radius:4px;color:#debd67;}
+.oprpg-native.oprpg-legacy.actor.character:not(.npc) .legacy-character>.ability-scores{margin:-62px 16px 0 248px;flex:0 0 62px;height:62px;}
+.oprpg-native.oprpg-legacy.actor.character:not(.npc) .ability-score{width:68px;min-width:56px;min-height:72px;}
+.oprpg-native.oprpg-legacy .sheet-header .op-header-context{position:absolute;top:8px;left:50%;transform:translateX(-50%);max-width:55%;height:22px;min-height:22px;padding:0 4px;border:0;background:transparent;color:#e9e8dcbd;font:bold 12px 'Roboto Condensed',Arial,sans-serif;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.oprpg-native.oprpg-legacy .sheet-header .op-header-config{position:absolute;right:63px;top:24px;width:30px;height:30px;min-height:30px;padding:0;border:0;clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);background:linear-gradient(135deg,#e2ca90,#725a30);box-shadow:none;color:#fff;z-index:2;}
+.oprpg-native.oprpg-legacy .sheet-header .op-header-config i{font-size:11px;}
+.oprpg-native.oprpg-legacy.actor.character:not(.npc)>.window-header .header-control:not(.op-edit-mode){color:#e9e9e1;}
+.oprpg-native.op-dialog .op-use-summary>div{display:flex;justify-content:space-between;gap:16px;padding:10px 0;border-bottom:1px solid #4b4032;}
+.oprpg-native.op-dialog .op-use-summary>div span{font-variant-numeric:tabular-nums;white-space:nowrap;}
+/* Code audit: preserve original control geometry without global button inheritance. */
+.oprpg-native.oprpg-legacy .sheet-header button.level-badge,
+.oprpg-native.oprpg-legacy .sheet-header button.level-badge:is(:hover,:focus,:active,:disabled){background:transparent url('../ui/level-badge.webp') center/contain no-repeat!important;border:0!important;box-shadow:none;margin:0;padding:0;border-radius:50%;}
+.oprpg-native.oprpg-legacy .sheet-header button.level-badge:focus-visible{outline:2px solid #d8bb72;outline-offset:2px;}
+.oprpg-native.oprpg-legacy.actor.character:not(.npc) .sheet-header-buttons{flex:0 0 138px;max-width:none;flex-wrap:nowrap;margin:0;align-items:center;}
+.oprpg-native.oprpg-legacy .sheet-header-buttons .gold-button{flex:0 0 30px;display:inline-flex;align-items:center;justify-content:center;padding:0;line-height:1;}
+.oprpg-native.oprpg-legacy .sheet-header .op-header-config{top:50%;transform:translateY(-50%);}
+.oprpg-native.oprpg-legacy .config-button.unbutton{flex:0 0 24px;width:24px;height:24px;min-height:24px;display:inline-flex;align-items:center;justify-content:center;}
+.oprpg-native.oprpg-legacy .config-button.unbutton:hover{color:#f5dc9b;text-shadow:0 0 5px #c6a34566;}
+.oprpg-native.oprpg-legacy .proficiency-dot{flex:0 0 16px;margin:0;gap:0;}
+.oprpg-native.oprpg-legacy .skills .name.unbutton{min-width:0;text-align:left;white-space:normal;overflow-wrap:anywhere;line-height:1.3;}
+.oprpg-native.oprpg-legacy .saves li{min-width:0;}
+.oprpg-native.oprpg-legacy .saves .name.unbutton{min-width:0;}
+.oprpg-native.oprpg-legacy .ability-score{background:#29292f;}
+.oprpg-native.oprpg-legacy .pill-lg .name{min-width:0;overflow-wrap:anywhere;}
+.oprpg-native.oprpg-legacy .op-item-group .item-row>button{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;}
+.oprpg-native.oprpg-legacy .op-item-title{flex:1 1 150px;min-width:0;overflow-wrap:anywhere;}
+.oprpg-native.oprpg-legacy .op-item-group .op-item-title>button{display:block;width:100%;min-width:0;text-align:left;white-space:normal;overflow-wrap:anywhere;}
+.oprpg-native.oprpg-legacy .op-list-search{flex-direction:row;}
+.oprpg-native.oprpg-legacy .op-item-original .op-step-row{display:flex;align-items:center;flex-wrap:wrap;}
+.oprpg-native.oprpg-legacy .op-item-original .op-step-row>span{flex:1 1 160px;}
+.oprpg-native.oprpg-legacy .op-item-original .op-step-row>button{flex:0 0 auto;}
+.oprpg-native.oprpg-legacy .op-item-original .op-name{width:100%;min-width:0;margin:0;}
+.oprpg-native.oprpg-legacy .op-item-original .op-activity-navigation{flex-wrap:wrap;gap:6px;}
+.oprpg-native.oprpg-legacy .op-activity-navigation>button{flex:1 1 90px;min-width:0;white-space:normal;}
+.oprpg-native.oprpg-legacy .op-technique-columns>span{min-width:0;overflow-wrap:anywhere;}
+.oprpg-native.oprpg-legacy .op-technique-tools{gap:2px;}
+.oprpg-native.oprpg-legacy .op-technique-tools button.unbutton{flex:0 0 18px;width:18px;min-width:18px;height:26px;display:inline-flex;align-items:center;justify-content:center;}
+.oprpg-native.oprpg-legacy .op-technique-search button.unbutton{height:28px;min-height:28px;display:inline-flex;align-items:center;justify-content:center;}
+.oprpg-native.op-dialog:not(.op-menu) .form-footer{display:flex;flex-wrap:wrap;}
+.oprpg-native.op-dialog .form-footer>button{flex:1 1 100px;min-width:0;white-space:normal;overflow-wrap:anywhere;}
+.oprpg-native.op-menu .form-footer>button{width:100%;}
+.oprpg-native.oprpg-legacy .tabs-right{max-height:calc(100% - 24px);overflow-y:auto;overflow-x:hidden;}
+/* Selected concept 3: compact reference list, with native actions preserved. */
+.oprpg-native.oprpg-legacy .op-reference-list{margin:14px 0;min-width:0;color:#e4dfd6;}
+.oprpg-native.oprpg-legacy .op-reference-styles{border-bottom:1px solid #92753e;padding-bottom:8px;margin-bottom:10px;}
+.oprpg-native.oprpg-legacy button.op-reference-style{display:flex;align-items:center;flex-wrap:wrap;gap:6px;width:100%;min-height:30px;padding:4px 0;text-align:left;color:#e4dfd6;}
+.oprpg-native.oprpg-legacy .op-reference-style strong{flex:1 1 80px;min-width:0;font:700 14px OPSlab,Georgia,serif;overflow-wrap:anywhere;}
+.oprpg-native.oprpg-legacy .op-reference-style .op-reference-level{font:11px OPCondensed,Arial,sans-serif;white-space:nowrap;}
+.oprpg-native.oprpg-legacy .op-reference-style small{font:11px OPCondensed,Arial,sans-serif;color:#c6ac6d;border-left:1px solid #76603b;padding-left:6px;}
+.oprpg-native.oprpg-legacy .op-reference-style>i{font-size:10px;color:#b5a073;}
+.oprpg-native.oprpg-legacy .op-reference-traits{display:grid;gap:8px;margin:0 0 12px;}
+.oprpg-native.oprpg-legacy .op-reference-traits>div{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:10px;align-items:baseline;}
+.oprpg-native.oprpg-legacy .op-reference-traits dt{font:700 12px OPSlab,Georgia,serif;}
+.oprpg-native.oprpg-legacy .op-reference-traits dd{margin:0;font:12px/1.4 OPRoboto,Arial,sans-serif;overflow-wrap:anywhere;}
+.oprpg-native.oprpg-legacy .op-reference-actions{display:grid;gap:6px;border-bottom:1px solid #92753e;padding-bottom:12px;margin-bottom:12px;}
+.oprpg-native.oprpg-legacy button.op-reference-action{display:grid;grid-template-columns:18px minmax(0,1fr) 12px;align-items:center;gap:8px;width:100%;min-height:36px;padding:7px 9px;border:1px solid #51483b;border-radius:4px;background:#242329;color:#e4dfd6;text-align:left;font:12px/1.35 OPRoboto,Arial,sans-serif;}
+.oprpg-native.oprpg-legacy .op-reference-action>i{color:#cbb174;font-size:13px;}
+.oprpg-native.oprpg-legacy .op-reference-action>i:last-child{font-size:10px;}
+.oprpg-native.oprpg-legacy button.op-reference-action:hover{background:#302e35;border-color:#a78c52;}
+.oprpg-native.oprpg-legacy button.op-reference-action:active{background:#39363e;}
+.oprpg-native.oprpg-legacy details.op-reference-resources{margin:0;padding:9px 10px;border:1px solid #51483b;border-radius:4px;background:#242329;}
+.oprpg-native.oprpg-legacy .op-reference-resources>summary{color:#e4dfd6;font:12px/1.5 OPRoboto,Arial,sans-serif;}
+.oprpg-native.oprpg-legacy .op-reference-resources>summary::marker{color:#cbb174;}
+.oprpg-native.oprpg-legacy .op-reference-style:hover strong{color:#eed18a;}
+/* Book portraits accompany compact origin cards instead of decorative textures. */
+.oprpg-native.oprpg-legacy .classic-details .pills-lg{gap:6px;margin:0 0 6px;}
+.oprpg-native.oprpg-legacy .op-profession-portraits{display:grid;gap:6px;margin:6px 0 10px;}
+.oprpg-native.oprpg-legacy .op-origin-card .pill-lg,.oprpg-native.oprpg-legacy .pill-lg.op-profession-portrait{min-height:44px;margin:0;padding:5px 34px 5px 7px;gap:8px;background:#242329;border:1px solid #63563c;border-radius:4px;text-align:left;}
+.oprpg-native.oprpg-legacy .op-origin-card .pill-lg:hover,.oprpg-native.oprpg-legacy .pill-lg.op-profession-portrait:hover{background:#302e35;border-color:#aa9056;}
+.oprpg-native.oprpg-legacy .op-origin-card .gold-icon{width:32px;height:32px;flex:0 0 32px;border:1px solid #776543;border-radius:3px;background:#19171d;}
+.oprpg-native.oprpg-legacy .op-origin-card .gold-icon[data-book-art]:not([data-book-art=custom]){object-fit:cover;object-position:center 25%;}
+.oprpg-native.oprpg-legacy .op-origin-card .gold-icon[data-book-art=celestiais]{object-position:center;}
+.oprpg-native.oprpg-legacy .op-origin-symbol{display:grid;place-items:center;flex:0 0 32px;width:32px;height:32px;background:#1c1a21;border:1px solid #63563c;border-radius:3px;color:#c4aa6b;font-size:16px;}
+.oprpg-native.oprpg-legacy .op-origin-card .pill-lg .title,.oprpg-native.oprpg-legacy .op-profession-portrait .title{font:700 12px/1.3 OPSlab,Georgia,serif;color:#e5dfd2;}
+.oprpg-native.oprpg-legacy .op-origin-card .pill-lg small,.oprpg-native.oprpg-legacy .op-profession-portrait small{margin-top:2px;font:9px/1.2 OPCondensed,Arial,sans-serif;color:#bcae8d;letter-spacing:.03em;}
+.oprpg-native.oprpg-legacy .op-origin-card>.config-button{right:5px;}
+/* Selected stat concept 2: one compact strip with three equal cells. */
+.oprpg-native.oprpg-legacy .lozenges.op-stat-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin:4px 0 6px;padding:2px 0;background:linear-gradient(#2c2b31,#222128);border:1px solid #9a8046;border-radius:4px;overflow:hidden;}
+.oprpg-native.oprpg-legacy .op-stat-strip>.lozenge{grid-column:auto;grid-row:auto;justify-self:stretch;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-width:0;width:100%;min-height:37px;margin:0;padding:1px;border:0;border-radius:0;background:transparent;color:#eae5db;}
+.oprpg-native.oprpg-legacy .op-stat-strip>.lozenge+.lozenge{border-left:1px solid #75613b;}
+.oprpg-native.oprpg-legacy .op-stat-strip>.lozenge>i{font-size:9px;line-height:10px;color:#c6ac67;}
+.oprpg-native.oprpg-legacy .op-stat-strip .lozenge .value{clip-path:none;min-width:0;max-width:100%;padding:0;background:transparent;font:700 15px/17px OPCondensed,Arial,sans-serif;color:#f1eee6;font-variant-numeric:tabular-nums;white-space:nowrap;}
+.oprpg-native.oprpg-legacy .op-stat-strip .value small{font-size:12px;font-weight:400;}
+.oprpg-native.oprpg-legacy .op-stat-strip .lozenge .label{margin:0;font:700 8px/11px OPCondensed,Arial,sans-serif;color:#cbb479;letter-spacing:0;}
+.oprpg-native.oprpg-legacy .op-stat-strip>button.lozenge:hover{background:#39343a;}
+.oprpg-native.oprpg-legacy .op-stat-strip>button.lozenge:focus-visible{outline:2px solid #efcf78;outline-offset:-3px;}
+/* All editor headers reserve the title-bar area instead of sharing its coordinates. */
+.oprpg-native.oprpg-legacy.item:not(.op-native-activity) .op-item-original>.sheet-header{height:auto;min-height:142px;flex:0 0 auto;margin:0;padding:36px 18px 10px;align-items:center;gap:12px;}
+.oprpg-native.oprpg-legacy .op-item-original>.sheet-header>.left{flex:0 0 80px;width:80px;}
+.oprpg-native.oprpg-legacy .op-item-original>.sheet-header .document-image{width:80px;height:80px;display:block;}
+.oprpg-native.oprpg-legacy .op-item-original>.sheet-header>.middle{min-width:0;align-self:center;justify-content:center;gap:5px;}
+.oprpg-native.oprpg-legacy .op-item-original>.sheet-header .document-name{font-size:28px;line-height:34px;height:36px;min-height:36px;padding:0;}
+.oprpg-native.oprpg-legacy .op-item-original>.sheet-header .subtitles{min-height:0;margin:0;gap:3px 6px;font-size:12px;line-height:16px;text-align:center;overflow-wrap:anywhere;}
+.oprpg-native.oprpg-legacy .op-item-original>.sheet-header .op-item-header-values{flex:0 0 45px;min-width:0;align-self:center;justify-content:center;padding:0;gap:5px;line-height:16px;overflow-wrap:anywhere;}
+.oprpg-native.oprpg-legacy .op-ship-original>.sheet-header{height:auto;min-height:140px;flex:0 0 auto;padding:36px 18px 12px;gap:14px;align-items:center;}
+.oprpg-native.oprpg-legacy .op-ship-original>.sheet-header>.left{flex:0 0 90px;}
+.oprpg-native.oprpg-legacy .op-ship-original>.sheet-header>.middle{flex:1;min-width:0;}
+.oprpg-native.oprpg-legacy .op-ship-original>.sheet-header .op-name{margin:0;}
+.oprpg-native.oprpg-legacy .op-ship-original>.sheet-header .document-name{width:100%;font-size:30px;height:40px;}
+.oprpg-native.oprpg-legacy .op-ship-original .document-subtitle{margin:5px 0 0;overflow-wrap:anywhere;}
+.oprpg-native.oprpg-legacy.npc .legacy-character>.op-npc-header.sheet-header{padding-top:38px;}
+.oprpg-native.oprpg-legacy .op-npc-header .op-name{margin:0;min-width:0;}
+.oprpg-native.oprpg-legacy .op-npc-header .document-name{width:100%;}
+.oprpg-native.oprpg-legacy .op-npc-header .document-subtitle{margin:4px 0 10px;}
+.oprpg-native.oprpg-legacy .op-item-original .op-card .form-group>label{min-width:0;line-height:1.4;padding-block:4px;overflow-wrap:anywhere;}
+.oprpg-native.oprpg-legacy .op-card .form-fields>button{flex:0 0 auto;align-self:center;}
+.oprpg-native.op-dialog .op-effect-row>*,.oprpg-native.op-dialog .op-pair>*,.oprpg-native.op-dialog .op-three-col>*{min-width:0;}
+.oprpg-native.op-dialog .form-footer>button{height:auto;padding:6px 10px;line-height:1.35;}
+.oprpg-native.oprpg-legacy .op-item-navigation>button{min-width:0;white-space:normal;overflow-wrap:anywhere;}
+.oprpg-native.oprpg-legacy .op-card>header>h3{flex:1 1 120px;min-width:0;overflow-wrap:anywhere;}
+.oprpg-native.op-haki-tree{max-width:calc(100vw - 32px);max-height:calc(100vh - 48px);background:#110d16;color:#e7dece;border:1px solid #8e7237;}
+.oprpg-native.op-haki-tree .window-content{padding:12px;overflow:hidden;background:linear-gradient(#160f1ee8,#100d16f5);}
+.op-haki-body{height:100%;min-height:0;display:flex;flex-direction:column;gap:10px;}
+.op-haki-overview{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:12px;border:1px solid #665232;border-radius:6px;background:#21191e;}
+.op-haki-stages,.op-haki-points{display:flex;flex-wrap:wrap;gap:10px;font-size:11px;}
+.op-haki-points span{display:grid;text-align:center;gap:3px;}
+.op-haki-points b{color:#e5c46c;font-size:15px;}
+.op-haki-tabs{display:flex;gap:6px;}
+.oprpg-native.op-haki-tree .op-haki-tabs button{flex:1;}
+.oprpg-native.op-haki-tree .op-haki-tabs button[aria-pressed=true]{background:#554224;border-color:#d4af48;}
+.op-haki-tools{display:flex;align-items:center;justify-content:flex-end;gap:6px;font-size:10px;color:#bbad96;}
+.op-haki-tools span{margin-right:auto;}
+.op-haki-viewport{flex:1;min-height:240px;overflow:auto;cursor:grab;border:1px solid #55412f;border-radius:6px;}
+.op-haki-canvas{position:relative;transform-origin:top left;}
+.op-haki-band{position:absolute;left:0;right:0;border-bottom:1px solid #6f6253;background:#34273155;pointer-events:none;}
+.op-haki-band:nth-child(even){background:#21171d55;}
+.op-haki-band>span{display:block;width:110px;padding:30px 8px;text-align:center;font:bold 12px OPCondensed,Arial,sans-serif;text-transform:uppercase;color:#bba579;}
+.op-haki-branch{position:absolute;top:10px;transform:translateX(-50%);font-size:12px;color:#dec88f;}
+.op-haki-links{position:absolute;inset:0;pointer-events:none;}
+.op-haki-links path{fill:none;stroke:#8c8170;stroke-width:3;opacity:.6;}
+.op-haki-links path.learned{stroke:#d1af59;opacity:1;}
+.oprpg-native.op-haki-tree button.op-haki-node{position:absolute;width:140px;height:56px;min-height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:5px;border:1px solid #73603c;border-radius:7px;background:#19141f;color:#e5ddd1;font-size:10px;line-height:1.2;}
+.oprpg-native.op-haki-tree button.op-haki-node.learned{border-color:#dbb347;box-shadow:0 0 7px #c5a04355;}
+.oprpg-native.op-haki-tree button.op-haki-node:hover{background:#302532;border-color:#edce72;}
+.op-haki-node small{position:absolute;right:-8px;top:-9px;width:24px;height:24px;display:grid;place-items:center;background:#1b1621;border:1px solid #d3ad4f;border-radius:50%;color:#e8ca75;}
+.op-haki-stars{display:flex;gap:3px;color:#61595f;font-size:10px;}
+.op-haki-stars .filled{color:#df5643;}
+@container op-window (max-width:520px){
+ .oprpg-native.oprpg-legacy .op-item-original>.sheet-header .document-name{font-size:24px;}
+ .oprpg-native.oprpg-legacy .op-ship-original>.sheet-header{padding-inline:12px;gap:10px;}
+ .oprpg-native.oprpg-legacy .op-ship-original .op-two-col{grid-template-columns:minmax(0,1fr);}
+}
+@container op-window (max-width:760px){
+ .oprpg-native.oprpg-legacy.actor.character:not(.npc) .legacy-character>.sheet-header{padding-inline:24px;}
+ .oprpg-native.oprpg-legacy.actor.character:not(.npc) .sheet-header .document-name{font-size:36px;}
+ .oprpg-native.oprpg-legacy.actor.character:not(.npc) .legacy-character>.ability-scores{margin-left:240px;margin-right:10px;}
+ .oprpg-native.oprpg-legacy .ability-scores :is(.rows,.top,.bottom){gap:3px;}
+ .oprpg-native.oprpg-legacy.actor.character:not(.npc) .ability-score{min-width:40px;width:48px;}
+ .oprpg-native.oprpg-legacy .op-technique-columns{grid-template-columns:minmax(80px,1fr) 48px 48px 48px 38px 58px;gap:2px;}
+}
+/* Compact controls and explicit reading states, matching the old composition. */
+.oprpg-native.oprpg-legacy .op-item-original>.sheet-header .op-read-name{height:auto;min-height:0;white-space:normal;overflow-wrap:anywhere;text-align:center;margin:0;line-height:1.1;}
+.oprpg-native.oprpg-legacy .portrait{position:relative;}
+.oprpg-native.oprpg-legacy .portrait:not(.token)>img{object-fit:var(--op-portrait-fit,contain);}
+.oprpg-native.oprpg-legacy .portrait.token>img{object-fit:contain;}
+.oprpg-native.oprpg-legacy .op-edit-portrait{position:absolute;bottom:4px;right:4px;width:24px;height:24px;background:#211e26dc;border:1px solid #927742;}
+.oprpg-native.oprpg-legacy .op-cr-total{position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);font-size:8px;white-space:nowrap;background:#211d24;border-radius:2px;padding:1px 3px;}
+.oprpg-native.oprpg-legacy .op-resistance-label{white-space:nowrap;}
+.oprpg-native.oprpg-legacy .sidebar{padding-right:10px;}
+.oprpg-native.oprpg-legacy .sidebar .sidebar-collapser{right:-9px;}
+.oprpg-native .op-consumption-group{margin-block:8px;}
+.oprpg-native .op-consumption-group>summary{padding:5px 0;color:var(--op-gold,#dbbd6d);}
+.oprpg-native .config-button:focus-visible,.oprpg-native .op-haki-node:focus-visible,.oprpg-native .gold-button:focus-visible{outline:2px solid #f7e6a1;outline-offset:-3px;}
+.oprpg-native.oprpg-legacy .op-technique-tools{gap:4px;}
+.oprpg-native.oprpg-legacy .op-technique-tools button.unbutton{flex-basis:24px;width:24px;min-width:24px;min-height:24px;}
+.oprpg-native.oprpg-legacy .op-technique-columns{grid-template-columns:minmax(100px,1fr) 60px 68px 70px 52px 80px;}
+.oprpg-native.op-haki-tree .window-content{background:linear-gradient(#140f18cf,#100d16ef),url('../assets/haki/haki-wallpaper.webp') center/cover;}
+.op-haki-layout{display:flex;flex:1;min-height:0;gap:12px;}
+.op-haki-layout>.op-haki-viewport{min-width:0;}
+.op-haki-inspector{flex:0 0 240px;padding:14px;background:#19141de8;border:1px solid #867044;border-radius:6px;overflow:auto;font-size:12px;}
+.op-haki-inspector h2{color:#e2c675;font-family:OPCondensed,serif;font-size:22px;margin:0 0 8px;}
+.op-haki-inspector h3{font-size:12px;margin-top:16px;}
+.op-haki-inspector dl{display:grid;grid-template-columns:1fr auto;gap:8px;}
+.op-haki-inspector dd{margin:0;color:#e6ce8a;}
+.op-haki-inspector button{width:100%;}
+.op-haki-reason{padding:8px;border:1px solid #725f3d;border-radius:4px;color:#e4c48b;}
+.op-haki-stages>span{display:grid;text-align:center;padding:6px 10px;border:1px solid #6a5636;border-radius:4px;}
+.op-haki-stages>span.active{background:#534020;border-color:#d8b44d;color:#f1d16e;}
+.op-haki-stages small{font-size:10px;}
+.op-haki-tools input{max-width:240px;min-width:80px;}
+.op-haki-tools>[data-haki-search-status]{margin:0;}
+.oprpg-native.op-haki-tree button.op-haki-node{gap:2px;}
+.oprpg-native.op-haki-tree button.op-haki-node.available{border-color:#c6a354;}
+.oprpg-native.op-haki-tree button.op-haki-node.blocked{border-color:#69616e;color:#c0b7c3;}
+.oprpg-native.op-haki-tree button.op-haki-node.complete{border-color:#b7d198;}
+.oprpg-native.op-haki-tree button.op-haki-node.selected{outline:2px solid #f5d67d;outline-offset:2px;}
+.op-haki-node-state{font-size:8px;text-transform:uppercase;letter-spacing:.2px;}
+.op-haki-stars .filled{color:#dfbb65;}
+.op-haki-node[hidden],.op-haki-links[hidden]{display:none!important;}
+@container op-window (max-width:760px){.oprpg-native.oprpg-legacy.actor.character:not(.npc) .ability-score{flex-basis:48px;}.oprpg-native.oprpg-legacy .op-technique-columns{grid-template-columns:minmax(80px,1fr) 48px 48px 48px 38px 80px;}.op-haki-layout{flex-direction:column;}.op-haki-inspector{flex:0 0 180px;}.op-haki-overview{padding:8px;gap:8px;}.op-haki-tools{flex-wrap:wrap;}}
+.oprpg-native.op-dialog .op-flow-summary{position:sticky;top:0;z-index:2;}
+.oprpg-native.op-dialog .op-flow-steps{display:flex;gap:8px;flex-wrap:wrap;padding:0;list-style:none;font-size:11px;color:#b6ab97;margin:0 0 10px;}
+.oprpg-native.op-dialog .op-flow-steps .current{color:#f1d27d;font-weight:bold;}
+
+
+.oprpg-native .op-book-text{white-space:pre-line;line-height:1.45;overflow-wrap:anywhere;}

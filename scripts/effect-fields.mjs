@@ -12,3 +12,11 @@ export function effectChange(path,type,value) {
  if(!field||!field.operations.includes(type)||!Number.isFinite(value)) throw new Error("Campo, operação ou valor de efeito inválido.");
  return {key:path,type,value,phase:field.phase,priority:null};
 }
+/** Keep the selector consistent with the same registry used on submission. */
+export function bindEffectOperations(root){
+ for(const row of root.querySelectorAll('.op-effect-row')){
+  const path=row.querySelector('[name^="path-"]'),operator=row.querySelector('[name^="operator-"]');
+  const sync=()=>{const allowed=EFFECT_FIELDS.find(f=>f.path===path.value)?.operations??[];for(const option of operator.options)option.hidden=option.disabled=!allowed.includes(option.value);operator.disabled=!allowed.length;if(allowed.length&&!allowed.includes(operator.value))operator.value=allowed[0];};
+  path.addEventListener('change',sync);sync();
+ }
+}

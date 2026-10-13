@@ -1,5 +1,9 @@
+import {bookDescription} from './book-descriptions.mjs';
+import {contentArtwork} from './content-art.mjs';
+import {PROFESSION_CATALOG} from './profession-catalog.mjs';
+import {HAKI_CATALOG} from './haki-catalog.mjs';
 // Numeric mechanics and references transcribed from the user-provided Jogador 2.1. No book prose or personal artwork.
-export const CATALOG = [
+const BASE_CATALOG = [
   {
     "id": "weapon-adaga-kunai",
     "name": "Adaga/Kunai",
@@ -17940,3 +17944,5 @@ export const CATALOG = [
     }
   }
 ];
+
+export const CATALOG = [...BASE_CATALOG,...HAKI_CATALOG,...PROFESSION_CATALOG].map(item=>({...item,img:contentArtwork(item),system:{...item.system,...bookDescription(item)}}));

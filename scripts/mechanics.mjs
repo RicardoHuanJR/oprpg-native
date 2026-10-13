@@ -1,3 +1,4 @@
+import {zoanProfile} from './fruit.mjs';
 import {activeItemRules} from './item-rules.mjs';
 import {movementFromConditions,conditionSet} from './conditions.mjs';
 
@@ -28,7 +29,7 @@ export function proficiencyFactor(manual=1,rules=[]){
 
 export function movementSpeeds(system,items=[],statuses=[]){
   // The prepared base includes the racial speed and core initial-phase effects.
-  const raw=system.movement;
+  const raw=zoanProfile(system.fruit,system.movement).speeds;
   const rules=activeItemRules(system,items);
   const weakened=new Set(statuses??[]).has('weakened');
   const result={};
@@ -46,6 +47,25 @@ export function movementSpeeds(system,items=[],statuses=[]){
     if(system.environment?.chaseBlind)result[mode]/=2;
   }
   return result;
+}
+
+export function movementCounter(state,{context,speeds,mode='distance'}={}){
+  if(!Object.hasOwn(speeds,mode))throw new Error('Modo de deslocamento inválido.');
+  const current=context&&state.ownEpoch===context.ownEpoch;
+  const speed=['swimming','climbing'].includes(mode)&&speeds[mode]===0?speeds.distance:speeds[mode];
+  const spent=current?state.movementSpent??0:0,dashes=current?state.dashes??0:0;
+  const maximum=speed*(1+dashes);
+  return {speed,spent,dashes,maximum,remaining:Math.max(0,maximum-spent),exceeded:spent>maximum};
+}
+
+export function movementCounterPlan(state,{context,speeds,mode='distance',amount=0,replace=false,dashes=null}={}){
+  if(!context?.isOwnTurn)throw new Error('O contador exige o próprio turno em combate.');
+  if(!Number.isFinite(amount)||amount<0)throw new Error('Gasto de deslocamento inválido.');
+  const next={...state};
+  if(next.ownEpoch!==context.ownEpoch)Object.assign(next,{ownEpoch:context.ownEpoch,actionUsed:false,powerfulUsed:false,bonusUsed:false,reactionUsed:false,attacksRemaining:0,specialAttacks:0,movementSpent:0,dashes:0,dodging:false,readyTrigger:''});
+  if(dashes!==null){if(!Number.isInteger(dashes)||dashes<0)throw new Error('Quantidade de Disparadas inválida.');next.dashes=dashes;}
+  next.movementSpent=replace?amount:(next.movementSpent??0)+amount;
+  return {state:next,...movementCounter(next,{context,speeds,mode})};
 }
 
 export function movementPlan(state,{context,speeds,mode='distance',distance=0,difficult=false,ignoreDifficult=false,prone=false,stand=false,shaken=false}){

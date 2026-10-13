@@ -16,11 +16,21 @@ export const EXPERTISE_PROFILES=Object.freeze({
  'arco-estilingue':{status:'enraged'},chicote:{status:'incapacitated'},foice:{kind:'pullOrDamage',formula:'1d8',meters:1.5},
  mangual:{kind:'halfDefenseDamage'},tridente:{kind:'slowHalf'},zarabatana:{status:'restrained'}
 });
-export async function applyExpertise(item,{target=null,targets=[],choice='damage',confirmArea=false,temporaryChoice,requestId}={}){
+const expertiseQueues=new WeakMap();
+// Protect the complete operation without nesting the recipient's resource queue.
+export function applyExpertise(item,options={}){
+  if(!item.actor?.isOwner)return Promise.reject(new Error('Sem permissão.'));
+  const actor=item.actor,before=expertiseQueues.get(actor)??Promise.resolve();
+  const next=before.catch(()=>{}).then(()=>applyExpertiseInside(item,options));
+  const tail=next.catch(()=>{});expertiseQueues.set(actor,tail);
+  void tail.finally(()=>{if(expertiseQueues.get(actor)===tail)expertiseQueues.delete(actor);});
+  return next;
+}
+async function applyExpertiseInside(item,{target=null,targets=[],choice='damage',confirmArea=false,temporaryChoice,operation=null}={}){
   const actor=item.actor;if(!actor?.isOwner)throw new Error('Sem permissão.');
-  const use=actor.getFlag('oprpg-native','lastActivity');
+  const use=operation??actor.getFlag('oprpg-native','lastActivity');
   if(!use||use.itemUUID!==item.uuid||use.prepared||use.attack?.natural!==20||!use.activity.proficient||item.type!=='weapon')throw new Error('Expertise exige crítico natural proficiente já registrado.');
-  const profile=EXPERTISE_PROFILES[item.system.identifier];if(!profile)throw new Error('Configure a expertise personalizada com o Narrador.');
+  const profile=EXPERTISE_PROFILES[use.expertiseIdentifier??item.system.identifier];if(!profile)throw new Error('Configure a expertise personalizada com o Narrador.');
   const id=`${use.requestId}:expertise`;if(actor.getFlag('oprpg-native','expertiseApplied')?.includes(id))return {duplicate:true};
   const recipients=profile.self?[actor]:profile.kind==='areaDamage'?targets:[target];
   if(!recipients.length||recipients.some(value=>!value?.isOwner))throw new Error('Escolha alvos que o Narrador possa alterar.');

@@ -72,16 +72,19 @@ export function resolveDamage(vitality,{components,resistances=[],vulnerabilitie
     else if(vulnerable) amount*=2;
     trace.push({type:component.type,original:component.amount,reduction:bypassMitigation?0:component.reduction??0,resist,vulnerable,immune,final:amount});total+=amount;
   }
-  const temporaryAbsorbed=bypassTemporary ? 0 : Math.min(result.temporary??0,total);
+  integer(result.shield??0,'Pontos de Escudo');
+  const shieldAbsorbed=bypassTemporary?0:Math.min(result.shield??0,total);
+  if(Object.hasOwn(result,'shield'))result.shield-=shieldAbsorbed;
+  const temporaryAbsorbed=bypassTemporary ? 0 : Math.min(result.temporary??0,total-shieldAbsorbed);
   result.temporary=(result.temporary??0)-temporaryAbsorbed;
-  const realDamage=total-temporaryAbsorbed;
+  const realDamage=total-shieldAbsorbed-temporaryAbsorbed;
   const before=result.value;
   result.value=Math.max(0,before-realDamage);
   if(before===0 && realDamage>0) result.negative=(result.negative??0)+realDamage;
   const massive=before>0 && result.value===0 && realDamage-before>=result.max;
   const negativeFatal=before===0 && realDamage>0 && result.negative>=result.max;
   if(realDamage>0&&result.value===0) result.dead=Boolean(result.dead||massive||negativeFatal||(deathPolicy==="npc"&&!knockout));
-  return {vitality:result,total,realDamage,temporaryAbsorbed,massive,trace};
+  return {vitality:result,total,realDamage,shieldAbsorbed,temporaryAbsorbed,massive,trace};
 }
 
 export function absorbProtection(value,incoming,{discardOverflow=false}={}) {
@@ -102,10 +105,10 @@ export function powerCostPlan({current,cost,grade=null,exhaustion=0,overload=fal
   if(exhaustion+grade>5) throw new Error("Sobrecarga excederia o limite de exaustão permitido.");
   return {power:current,exhaustion:exhaustion+grade,cost:0};
 }
-export function longRestPlan(system,{startedAt,completedAt,startHP,startExhaustion,completed=true,powerPolicy}={}) {
-  if(!completed||!Number.isFinite(startedAt)||!Number.isFinite(completedAt)||completedAt-startedAt<8*3600) throw new Error("Descanso longo não concluído (8 horas).");
+export function longRestPlan(system,{startedAt,completedAt,startHP,startExhaustion,completed=true,powerPolicy,durationConfirmed=false,intervalConfirmed=false}={}) {
+  if(!completed||!Number.isFinite(startedAt)||!Number.isFinite(completedAt)||(!durationConfirmed&&completedAt-startedAt<8*3600)) throw new Error("Descanso longo não concluído (8 horas).");
   if(startHP<=0) throw new Error("Descanso longo exige ao menos 1 PV no início.");
-  if(system.rest.lastLongRest!==null && completedAt-system.rest.lastLongRest<24*3600) throw new Error("Benefício de descanso longo limitado a uma vez a cada 24 horas.");
+  if(!intervalConfirmed&&system.rest.lastLongRest!==null && completedAt-system.rest.lastLongRest<24*3600) throw new Error("Benefício de descanso longo limitado a uma vez a cada 24 horas.");
   if(startExhaustion>0 && !["half","blocked"].includes(powerPolicy)) throw new RuleDecisionRequired("Há divergência entre Jogador p.36 e p.278 sobre PP com exaustão. O mestre precisa escolher a referência aplicável.");
   const recoveredPower=startExhaustion===0 ? system.power.max : powerPolicy==="half" ? Math.floor(system.power.max/2) : 0;
   return {"system.vitality.value":system.vitality.max,"system.vitality.negative":0,"system.vitality.temporary":0,

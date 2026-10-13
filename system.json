@@ -1,11 +1,11 @@
 {
   "id": "oprpg-native",
   "title": "OP RPG Nativo — Experimental",
-  "description": "Sistema OP RPG independente para Foundry v14: ficha clássica, progressão com escolhas, multiestilo, raças e antecedentes, treinos condicionais e inventário. Experimental; regras específicas ainda exigem conferência.",
-  "version": "0.3.1",
+  "description": "OP RPG nativo: ficha clássica, árvore de Haki, raças e estilos oficiais, descrições das regras e imagens de conteúdo.",
+  "version": "0.3.2",
   "url": "https://github.com/RicardoHuanJR/oprpg-native",
   "manifest": "https://raw.githubusercontent.com/RicardoHuanJR/oprpg-native/main/system.json",
-  "download": "https://github.com/RicardoHuanJR/oprpg-native/releases/download/v0.3.1/oprpg-native-0.3.1.zip",
+  "download": "https://github.com/RicardoHuanJR/oprpg-native/releases/download/v0.3.2/oprpg-native-0.3.2.zip",
   "compatibility": {
     "minimum": "14",
     "verified": "14.367",
@@ -57,6 +57,6 @@
     "units": "m"
   },
   "socket": false,
-  "initiative": "1d20 + @attributes.dexterity.modifier",
+  "initiative": "1d20 + @initiative",
   "packs": []
 }

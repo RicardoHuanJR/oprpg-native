@@ -1,4 +1,6 @@
+import {zoanProfile} from './fruit.mjs';
 import {activeItemRules} from "./item-rules.mjs";
+import {boundPreparedResources} from './resource-limits.mjs';
 import {movementSpeeds,proficiencyFactor,underwaterContext} from './mechanics.mjs';
 import {ATTRIBUTES, attributeModifier, proficiencyBonus} from "./rules.mjs";
 import {SKILLS, hakiStage} from "./engine.mjs";
@@ -12,8 +14,8 @@ const schema = fields => new f.SchemaField(fields);
 const resource = () => schema({value: number(0, {min: 0}), max: number(0, {min: 0})});
 const list = () => new f.ArrayField(string(), {initial: []});
 const nullableNumber = () => new f.NumberField({required:true,nullable:true,initial:null});
-const customResource = () => schema({id:string(),name:string(),value:number(0,{min:0}),max:number(0,{min:0}),recovery:string("none",{choices:["none","short","long","shortOrLong","day"]}),source:string()});
-const activityFields=()=>({attribute:string("strength",{choices:Object.keys(ATTRIBUTES)}),proficiencyMode:string("manual",{choices:["manual","style"]}),activation:string("other",{choices:["action","powerful","bonus","reaction","legendary","passive","other"]}),proficient:boolean(),ammunitionItem:string(),ammunitionCost:number(0,{min:0}),powerCost:number(0,{min:0}),costMode:string('final',{choices:['final','construction']}),costFamily:string('combat',{choices:['combat','fruit']}),creationReduction:number(0,{min:0}),damageFormula:string(),range:string(),duration:string(),requirements:string(),surgicalControl:boolean(),concentration:boolean()});
+const customResource = () => schema({id:string(),name:string(),value:number(0,{min:0}),max:number(0,{min:0}),recoveryAmount:new f.NumberField({initial:null,nullable:true,min:0,integer:true}),recovery:string("none",{choices:["none","short","long","shortOrLong","day"]}),source:string()});
+const activityFields=()=>({attribute:string("strength",{choices:Object.keys(ATTRIBUTES)}),proficiencyMode:string("manual",{choices:["manual","style"]}),activation:string("other",{choices:["action","powerful","bonus","reaction","legendary","passive","other"]}),proficient:boolean(),ammunitionItem:string(),ammunitionCost:number(0,{min:0}),powerCost:number(0,{min:0}),costMode:string('final',{choices:['final','construction']}),costFamily:string('combat',{choices:['combat','fruit']}),creationReduction:number(0,{min:0}),damageFormula:string(),range:string(),targetLabel:string(),duration:string(),requirements:string(),surgicalControl:boolean(),concentration:boolean()});
 const resolutionFields=()=>({kind:string("attack",{choices:["attack","save","healing","utility"]}),attackBonus:nullableNumber(),addAttributeToAttack:boolean(),saveAttribute:string("constitution",{choices:Object.keys(ATTRIBUTES)}),saveDC:nullableNumber(),damageType:string("bludgeoning"),onSave:string("none",{choices:["none","half"]}),addAttributeToDamage:boolean(),criticalThreshold:number(20,{min:1,max:20}),ignoreBudget:boolean(),countsAsTechnique:new f.BooleanField({initial:true}),legendaryCost:number(1,{min:1})});
 
 
@@ -35,7 +37,7 @@ export class CharacterData extends foundry.abstract.TypeDataModel {
       vitality: schema({value: number(0, {min: 0}), max: number(0, {min: 0}), temporary: number(0, {min: 0}), negative: number(0, {min: 0})}),
       power: schema({value: number(0, {min: 0}), maxOverride: new f.NumberField({required: true, nullable: true, integer: true, min: 0, initial: null})}),
       defense: schema({rating: number(10)}),
-      movement: schema({swimming:new f.NumberField({initial:0,min:0}),climbing:new f.NumberField({initial:0,min:0}),flying:new f.NumberField({initial:0,min:0}),distance: new f.NumberField({required: true, nullable: false, min: 0, initial: 0})}),
+      movement: schema({automatic:new f.BooleanField({initial:true}),swimming:new f.NumberField({initial:0,min:0}),climbing:new f.NumberField({initial:0,min:0}),flying:new f.NumberField({initial:0,min:0}),distance: new f.NumberField({required: true, nullable: false, min: 0, initial: 0})}),
       creation: schema({attributesReviewed: boolean(), resourcesReviewed: boolean()}),
       skills:schema(Object.fromEntries(Object.keys(SKILLS).map(id=>[id,schema({proficient:boolean(),multiplier:new f.NumberField({initial:1,choices:[0.5,1,1.5,2],required:true,nullable:false}),bonus:number(),override:nullableNumber()})]))),
       exhaustion:number(0,{min:0,max:6}),
@@ -44,24 +46,29 @@ export class CharacterData extends foundry.abstract.TypeDataModel {
       rest:schema({lastLongRest:nullableNumber(),startedAt:nullableNumber(),startHP:number(0,{min:0}),startExhaustion:number(0,{min:0,max:6}),kind:string("long",{choices:["short","long"]}),shortEligible:boolean()}),
       damageMitigation:schema({resistances:list(),vulnerabilities:list(),immunities:list()}),
       resources:new f.ArrayField(customResource(),{initial:[]}),
+      referenceTraits:schema({senses:string(),languages:string()}),
       situations:list(),favorites:list(),
       combat:schema({unarmedDamage:string('1'),martial2d6:boolean(),attacksPerAction:number(1,{min:1}),state:schema({ownEpoch:string(),actionUsed:boolean(),powerfulUsed:boolean(),bonusUsed:boolean(),reactionUsed:boolean(),reactionEpoch:string(),attacksRemaining:number(0,{min:0}),specialAttacks:number(0,{min:0}),techniqueEpoch:string(),legendaryWindowEpoch:string(),movementSpent:new f.NumberField({initial:0,min:0}),dashes:number(0,{min:0}),dodging:boolean(),readyTrigger:string(),weaponShots:list(),underwaterEpoch:string(),underwaterKind:string()})}),
       appearance:schema({wallpaper:string(),portraitMode:string("actor",{choices:["actor","token"]})}),
       personal:schema({dream:string(),path:string(),background:string(),personality:string(),honor:string(),notes:string()}),
       currency:number(0,{min:0}),
-      haki:schema({awakened:boolean(),kingAllowed:boolean(),affinity:string("armament",{choices:["armament","observation","king"]}),primary:string("armament",{choices:["armament","observation"]}),unspent:number(0,{min:0}),armament:number(0,{min:0}),observation:number(0,{min:0}),king:number(0,{min:0}),learned:list()}),
-      fruit:schema({name:string(),category:string("none",{choices:["none","paramecia","logia","zoan"]}),heavyPoint:boolean(),stage:string(),notes:string()}),
+      haki:schema({awakened:boolean(),kingAllowed:boolean(),affinity:string("armament",{choices:["armament","observation","king"]}),primary:string("armament",{choices:["armament","observation"]}),unspent:number(0,{min:0}),armament:number(0,{min:0}),observation:number(0,{min:0}),king:number(0,{min:0}),learned:list(),active:list(),shield:number(0,{min:0}),shieldReadyAt:nullableNumber(),kingBonusGranted:number(0,{min:0})}),
+      fruit:schema({name:string(),category:string("none",{choices:["none","paramecia","logia","zoan"]}),heavyPoint:boolean(),stage:string(),notes:string(),form:string("normal",{choices:["normal","hybrid","animal"]}),subtype:string("common",{choices:["common","ancestral","mythical"]}),traits:list(),point:string()}),
       vitalityState:schema({dead:boolean(),deathPolicy:string("player",{choices:["player","npc"]})})
     };
   }
   prepareBaseData() {
     super.prepareBaseData();
+    const royal=[...(this.parent?.items??[])].some(item=>item.type==='hakiTalent'&&item.system.identifier==='rei'&&this.haki.learned.includes(item.uuid));
+    this.haki.kingGift=royal;
+    if(royal)this.attributes.will.base+=2;
     const benefits=advancementBenefits(this);
     for(const [id,bonus] of Object.entries(benefits.attributeBonuses))this.attributes[id].base+=bonus;
-    const species=this.progression.receipts.find(receipt=>receipt.kind==='species');if(species)this.movement.distance=species.movement;
+    const species=this.progression.receipts.find(receipt=>receipt.kind==='species');if(species&&this.movement.automatic)this.movement.distance=species.movement;
     const hp=progressionHP(this);const context={...this,vitality:{...this.vitality,max:hp??this.vitality.max}};
     if(this.environment.nearShield&&!(this.parent?.items??[]).some(item=>item.system.identifier==='escudo-de-ferro'&&item.system.equipment?.equipped))this.defense.rating+=1;
-    this.defense.rating+=activeItemRules(context,[...(this.parent?.items??[])]).filter(r=>r.kind==="defense").reduce((sum,r)=>sum+r.value,0);
+    this._opDefenseRuleBonus=activeItemRules(context,[...(this.parent?.items??[])]).filter(r=>r.kind==="defense").reduce((sum,r)=>sum+r.value,0);
+    this.defense.rating+=this._opDefenseRuleBonus;
   }
   prepareDerivedData() {
     super.prepareDerivedData();
@@ -75,13 +82,25 @@ export class CharacterData extends foundry.abstract.TypeDataModel {
     for (const attribute of Object.values(this.attributes)) attribute.modifier = attributeModifier(attribute.base);
     const environment=underwaterContext(this);if(environment.submerged&&!environment.aquatic)this.attributes.strength.modifier=Math.floor(this.attributes.strength.modifier/2);
     this.proficiency = {bonus: proficiencyBonus(this.progression.level)};
-    const rules=activeItemRules(this,[...(this.parent?.items??[])]);
-    this.vitality.max+=rules.filter(r=>r.kind==="vitality").reduce((sum,r)=>sum+r.value,0);
+    const initialRules=activeItemRules(this,[...(this.parent?.items??[])]);
+    this.vitality.max+=initialRules.filter(r=>r.kind==="vitality").reduce((sum,r)=>sum+r.value,0);
     if(this.fruit.category==='zoan'&&this.fruit.heavyPoint&&(this.parent?.items??[]).some(item=>item.system.identifier==='resistencia-dos-gigantes'&&item.system.training?.state==='learned'))this.vitality.max+=3*this.progression.level;
+    const zoan=zoanProfile(this.fruit,this.movement);
+    this.vitality.max+=zoan.hpBonus;
+    this.zoanSummary=zoan;
+    this.environment.sizeCategory=zoan.size??this._source?.environment?.sizeCategory??this.environment.sizeCategory;
+    this.vitality.max=Math.max(0,this.vitality.max);
+    const rules=activeItemRules(this,[...(this.parent?.items??[])]);
+    const defenseBonus=rules.filter(r=>r.kind==='defense').reduce((sum,r)=>sum+r.value,0);
+    this.defense.rating+=defenseBonus-(this._opDefenseRuleBonus??0);
+    this._opDefenseRuleBonus=defenseBonus;
     this.movementModes=movementSpeeds(this,[...(this.parent?.items??[])],this.parent?.statuses);
     this.combat.attacksPerAction=Math.max(this._source?.combat?.attacksPerAction??1,...rules.filter(r=>r.kind==="attacks").map(r=>r.value));
     if((this.parent?.items??[]).some(item=>item.system.identifier==='escudo-de-ferro'&&item.system.equipment?.equipped))this.combat.attacksPerAction=Math.max(1,this.combat.attacksPerAction-1);
     this.power.max = this.power.maxOverride ?? 4 * this.progression.level;
+    const defensive=[...(this.parent?.items??[])].find(item=>item.type==='hakiTalent'&&item.system.identifier==='endurecimento-defensivo'&&this.haki.learned.includes(item.uuid));
+    this.haki.shieldMax=defensive?20*Math.max(1,defensive.system.hakiTalent.rank??0):0;
+    this.haki.shield=Math.min(this.haki.shield,this.haki.shieldMax);
     this.haki.spent=this.haki.armament+this.haki.observation+this.haki.king;
     this.haki.stage=hakiStage(this.haki.spent);
     for(const [id,skill] of Object.entries(this.skills)) {
@@ -99,6 +118,7 @@ export class CharacterData extends foundry.abstract.TypeDataModel {
     this.carryingCapacity=10*this.attributes.strength.base;
     this.effectiveMovement=this.movementModes.distance;
     for(const [id,attribute]of Object.entries(this.attributes)){attribute.saveMultiplier=proficiencyFactor(1,rules.filter(r=>r.kind==='saveMultiplier'&&r.key===id));if(rules.some(r=>r.kind==='saveProficiency'&&r.key===id))attribute.saveProficient=true;}
+    boundPreparedResources(this,this._source);
   }
   static migrateData(source) { if(source.schemaVersion===1) source.schemaVersion=2; return super.migrateData(source); }
 }
@@ -117,6 +137,7 @@ export class NPCData extends CharacterData {
   prepareDerivedData() {
     super.prepareDerivedData(); this.proficiency.bonus = this.proficiencyOverride;
     this.power.max=this.power.maxOverride??0;
+    boundPreparedResources(this,this._source);
     for(const [id,skill] of Object.entries(this.skills)) {
       const rules=activeItemRules(this,[...(this.parent?.items??[])]);
       const proficient=skill.proficient||(id==="haki"&&["Treinado","Perito"].includes(this.haki.stage));
@@ -140,13 +161,13 @@ export class ContentData extends foundry.abstract.TypeDataModel {
   }
 }
 export class SpeciesData extends ContentData {
-  static defineSchema() { return {...super.defineSchema(), traits: string(),ancestries:list(),swimming:new f.NumberField({initial:0,min:0}),skillBonuses:schema(Object.fromEntries(Object.keys(SKILLS).map(id=>[id,number()]))),baseHP:number(0,{min:0}),movement:new f.NumberField({required:true,nullable:false,min:0,initial:0}),attributeBonuses:schema(Object.fromEntries(Object.keys(ATTRIBUTES).map(id=>[id,number()])))}; }
+  static defineSchema() { return {...super.defineSchema(), family:string(),traits: string(),ancestries:list(),swimming:new f.NumberField({initial:0,min:0}),skillBonuses:schema(Object.fromEntries(Object.keys(SKILLS).map(id=>[id,number()]))),baseHP:number(0,{min:0}),movement:new f.NumberField({required:true,nullable:false,min:0,initial:0}),attributeBonuses:schema(Object.fromEntries(Object.keys(ATTRIBUTES).map(id=>[id,number()])))}; }
 }
 export class ProgressionData extends ContentData {
   static defineSchema(){return {...super.defineSchema(),hitDie:number(8,{choices:[6,8,10,12]}),skillCount:number(2,{min:0}),headerImage:string(),initialEquipmentNote:string(),equipmentProficiencies:list(),multistyleRequirements:new f.ArrayField(requirement(),{initial:[]}),primaryAttribute:string("strength",{choices:Object.keys(ATTRIBUTES)}),skillProficiencies:list(),saveProficiencies:list()};}
 }
 export class ProfessionData extends ContentData {
-  static defineSchema(){return {...super.defineSchema(),profession:schema({rank:string("professional",{choices:["professional","specialist","master","grandMaster"]}),recognition:string(),tools:list()})};}
+  static defineSchema(){return {...super.defineSchema(),profession:schema({rank:string("professional",{choices:["professional","specialist","master","grandMaster"]}),recognition:string(),tools:list(),initialSkillCount:number(0,{min:0,max:2}),skillOptions:list()})};}
 }
 export class ActivityData extends ContentData {
   static defineSchema() {
@@ -165,7 +186,7 @@ export class AuxiliaryData extends ActivityData {
   static defineSchema(){const fields=super.defineSchema();fields.activity.fields.proficient=new f.BooleanField({initial:true});fields.resolution.fields.kind=string("utility",{choices:["attack","save","healing","utility"]});return fields;}
 }
 export class HakiTalentData extends ActivityData {
-  static defineSchema(){return {...super.defineSchema(),hakiTalent:schema({focus:string("armament",{choices:["armament","observation","king"]}),cost:number(0,{min:0}),minimumStage:string("Inexperiente",{choices:["Latente","Inexperiente","Treinado","Perito"]})})};}
+  static defineSchema(){return {...super.defineSchema(),hakiTalent:schema({focus:string("armament",{choices:["armament","observation","king"]}),cost:number(0,{min:0}),minimumStage:string("Inexperiente",{choices:["Latente","Inexperiente","Treinado","Perito"]}),requirements:list(),rank:number(0,{min:0,max:3}),maxRank:number(1,{min:1,max:3})})};}
 }
 // Auxiliares usam ActivityData: não possuem campo de grau.
 

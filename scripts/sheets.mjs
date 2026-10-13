@@ -1,6 +1,14 @@
+import {contentArtwork} from './content-art.mjs';
+import {hasFruit,techniqueSections,bindTechniqueList,techniqueRollPreview} from './presentation/technique-list.mjs';
+import {useHakiTalent,learnedHakiSummary,renewHakiShield} from './haki-use.mjs';
+import {configureFruit,choosePath,chooseProfession} from './subsystem-ui.mjs';
+import {bindItemLists} from './presentation/item-lists.mjs';
+import {longRestDialog,shortRestDialog} from './classic-dialogs.mjs';
+import {sheetSummary,itemSummary} from './sheet-summary.mjs';
+import {boundedValue} from './resource-limits.mjs';
 import {consumeEquipment} from "./inventory.mjs";
 import {activityUseDialog} from './activity-use-ui.mjs';
-import {RULE_KINDS} from "./item-rules.mjs";
+import {RULE_KINDS,activeItemRules} from "./item-rules.mjs";
 import {configureAdvancement,configureTrainingException,configureRequirements,configureStyleProficiencies,configureItemRule} from "./item-config-ui.mjs";
 import {progressionDialog,advanceDialog,chooseOrigin,trainingDialog} from "./progression-ui.mjs";
 import {recordTrainingDay} from "./progression-services.mjs";
@@ -20,10 +28,15 @@ const selectOptions = (map, selected) => Object.entries(map).map(([value, label]
 const escape=value=>foundry.utils.escapeHTML(String(value));
 const dialog=()=>Object.fromEntries(['prompt','confirm'].map(method=>[method,options=>foundry.applications.api.DialogV2[method]({...options,classes:[...(options.classes??[]),'oprpg-native','op-dialog']})]));
 function editToggle(sheet,context,owner) {
+ for(const button of sheet.element.querySelectorAll('button')){
+   const label=button.getAttribute('aria-label')||button.textContent.trim();
+   if(label&&!button.title)button.title=label;
+   for(const icon of button.querySelectorAll('i'))icon.setAttribute('aria-hidden','true');
+ }
  const header=sheet.element.querySelector('.window-header');if(!header||!owner)return;
  let toggle=header.querySelector('[data-action="toggleEditMode"]');
- if(!toggle){toggle=document.createElement('button');toggle.type='button';toggle.className='header-control op-edit-mode';toggle.dataset.action='toggleEditMode';toggle.setAttribute('aria-label','Alternar edição da ficha');toggle.innerHTML='<i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>';header.prepend(toggle);}
- toggle.title=context.editable?'Concluir edição':'Editar ficha';toggle.setAttribute('aria-pressed',String(context.editable));
+ if(!toggle){toggle=document.createElement('button');toggle.type='button';toggle.className='header-control op-edit-mode';toggle.dataset.action='toggleEditMode';toggle.setAttribute('aria-label','Alternar edição da ficha');toggle.innerHTML='<span class="op-edit-thumb"><i class="fa-solid fa-wrench" aria-hidden="true"></i></span>';toggle.setAttribute('role','switch');header.prepend(toggle);}
+ toggle.title=context.editable?'Concluir edição':'Editar ficha';toggle.setAttribute('aria-label',toggle.title);toggle.setAttribute('aria-checked',String(context.editable));
 }
 async function amountDialog(title,extra="") {
   return dialog().prompt({window:{title},content:`<label>Quantidade <input name="amount" type="number" min="0" step="1" value="0" required></label>${extra}`,ok:{callback:(_event,_button,app)=>({amount:Number(app.element.querySelector("form").elements.amount.value),form:app.element.querySelector("form")})}});
@@ -34,6 +47,34 @@ export class OPRPGActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     classes: ["oprpg-native","op-document-sheet"], tag: "form", position: {width: 1080, height: 830}, window: {resizable: true},
     form: {submitOnChange: true, closeOnSubmit: false},
     actions: {
+      renewHakiShield:guarded(function(){return renewHakiShield(this.actor);}),
+      removeProfession:guarded(async function(_event,target){const item=this.actor.items.get(target.dataset.itemId);if(!this.actor.isOwner||item?.type!=="profession")throw new Error("Selecione uma profissão controlável.");if(!await dialog().confirm({window:{title:"Remover profissão"},content:`<p>Remover ${escape(item.name)} e os benefícios concedidos por sua escolha?</p>`}))return;const receipt=item.getFlag("oprpg-native","grantReceipt");if(receipt){const {removeOrigin}=await import("./progression-services.mjs");await removeOrigin(this.actor,receipt);}else await item.delete();}),
+      openFruit:guarded(function(){if(!hasFruit(this.actor.system,[...this.actor.items]))return;this.activeTab='fruit';return this.render({force:true});}),
+      configureTechniqueActivity:guarded(async function(_event,target){const item=this.actor.items.get(target.dataset.itemId);if(!this.actor.isOwner||!item?.system.activity)throw new Error('Atividade indisponível.');const {NativeActivityEditor}=await import('./legacy-item-layout.mjs');const id=`op-activity-${item.uuid.replaceAll('.','-')}-primary`;return (item.apps?.[id]??new NativeActivityEditor({document:item,id})).render({force:true});}),
+      operateHaki:guarded(async function(_event,target){const item=this.actor.items.get(target.dataset.itemId);const result=await useHakiTalent(item);if(result.profile.reference)return item.sheet.render({force:true});return this.render({force:true});}),
+      choosePath:guarded(function(){return choosePath(this.actor);}),
+      configureFruit:guarded(function(){return configureFruit(this.actor);}),
+      addLibraryContent:guarded(async function(_event,target){
+        if(!this.actor.isOwner)throw new Error('Sem permissão.');
+        const type=target.dataset.type;
+        if(!['weapon','equipment','feature','technique','auxiliary','hakiTalent','fruit','personalization'].includes(type))throw new Error('Use a progressão para adicionar esta origem.');
+        const {contentPicker}=await import('./progression-ui.mjs');const {resolveContent}=await import('./progression-services.mjs');
+        const reference=await contentPicker(type,'Adicionar '+CATEGORIES[type]);if(!reference)return;
+        const source=await resolveContent(reference);const data=source.toObject?source.toObject():structuredClone(source);
+        for(const key of ['_id','id','uuid','folder','ownership','_stats'])delete data[key];
+        const [created]=await this.actor.createEmbeddedDocuments('Item',[data]);return created.sheet.render({force:true});
+      }),
+      viewOrigin:guarded(async function(_event,target){
+        const reference=sheetSummary(this.actor.system,[...this.actor.items])[target.dataset.kind==='background'?'backgroundReference':'speciesReference'];
+        if(reference.uuid?.startsWith('catalog:')){
+          const {resolveContent}=await import('./progression-services.mjs');const source=await resolveContent(reference.uuid);
+          return dialog().prompt({window:{title:source.name},content:`<article class="op-card"><h3>${escape(source.name)}</h3><p>${escape(source.system.source??'')}</p><p>${escape(source.system.traits??'')}</p><div>${await foundry.applications.ux.TextEditor.implementation.enrichHTML(source.system.description??'',{secrets:false,relativeTo:this.actor})}</div></article>`,ok:{label:'Fechar',callback:()=>null}});
+        }
+        const item=reference.id?this.actor.items.get(reference.id):reference.uuid?await fromUuid(reference.uuid):null;
+        if(!item||!item.testUserPermission(game.user,'OBSERVER'))throw new Error('A fonte desta origem não está disponível para consulta.');
+        return item.sheet.render({force:true});
+      }),
+      chooseProfession:guarded(function(){return chooseProfession(this.actor);}),
       openProgression:guarded(function(){return this.actor.type==="character"?progressionDialog(this.actor):OPRPGActorSheet.DEFAULT_OPTIONS.actions.configureResources.call(this);}),
       advanceLevel:guarded(function(){return advanceDialog(this.actor);}),
       learnTraining:guarded(function(){return trainingDialog(this.actor);}),
@@ -46,14 +87,22 @@ export class OPRPGActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       setExhaustion:guarded(function(_event,target){if(!this.actor.isOwner)throw new Error("Sem permissão.");const level=Number(target.dataset.level);if(!Number.isInteger(level)||level<1||level>6)throw new Error("Nível de exaustão inválido.");return this.actor.update({"system.exhaustion":level===this.actor.system.exhaustion?level-1:level});}),
       toggleFavorite:guarded(function(_event,target){if(!this.actor.isOwner)throw new Error("Sem permissão.");const item=this.actor.items.get(target.dataset.itemId);if(!item)throw new Error("Conteúdo indisponível.");const favorites=this.actor.system.favorites??[];return this.actor.update({"system.favorites":favorites.includes(item.id)?favorites.filter(id=>id!==item.id):[...favorites,item.id]});}),
       chooseHeaderArt:guarded(function(){if(!this.actor.isOwner)throw new Error("Sem permissão.");return new foundry.applications.apps.FilePicker.implementation({type:"image",current:this.actor.system.appearance.wallpaper,callback:path=>this.actor.update({"system.appearance.wallpaper":path})}).render({force:true});}),
-      openPowers:guarded(function(){if(this.actor.type==="ship")return;this.activeTab="powers";return this.render({force:true});}),
+      openFeatureUses:guarded(function(){
+        if(this.actor.type==='ship')return;
+        const resources=this.actor.system.resources??[],known=learnedHakiSummary(this.actor).filter(talent=>talent.max&&!resources.some(resource=>resource.id===`haki:${talent.id}`));
+        const rows=[...resources.map(resource=>({name:resource.name,value:resource.value,max:resource.max})),...known.map(talent=>({name:talent.name,value:talent.remaining,max:talent.max}))];
+        return dialog().prompt({window:{title:'Usos de características'},content:`<div class="op-use-summary">${rows.map(resource=>`<div><strong>${escape(resource.name)}</strong><span>${resource.value} / ${resource.max}</span></div>`).join('')||'<p>Nenhuma reserva de usos registrada.</p>'}</div><p class="op-hint">Os usos são registrados ao utilizar a característica e recuperados conforme sua regra de descanso.</p>`,ok:{label:'Fechar',callback:()=>null}});
+      }),
+      openPowers:guarded(async function(){if(this.actor.type==="ship")return;const {openHakiTree}=await import('./haki-tree.mjs');return openHakiTree(this.actor);}),
       selectTab: guarded(function (event, target) {
         const tab = target.dataset.tab;
         if (!SHEET_TABS.some(item=>item.id===tab)) return;
         if (tab === "creation" && (!game.settings.get("oprpg-native", "creationAssistant") || this.actor.type !== "character")) return;
         this.activeTab = tab;
+        this._resetTabScroll=true;
         return this.render({force: true});
       }),
+      rollInitiative: guarded(function(event){return this.actor.rollSheetInitiative({advantage:event.shiftKey,disadvantage:event.altKey});}),
       rollAttribute: guarded(function (event, target) { return this.actor.rollAttribute(target.dataset.attribute, {save: target.dataset.save === "true", advantage: event.shiftKey, disadvantage: event.altKey}); }),
       rollSkill:guarded(function(event,target){return this.actor.rollSkill(target.dataset.skill,{advantage:event.shiftKey,disadvantage:event.altKey});}),
       configureResources:guarded(async function(){
@@ -88,14 +137,12 @@ export class OPRPGActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       heal:guarded(async function(){const choice=await amountDialog("Recuperar PV");if(choice) await healActor(this.actor,choice.amount);}),
       temporary:guarded(async function(){const choice=await amountDialog("PV temporários",'<label>Escolha<select name="choice"><option value="replace">Substituir os atuais</option><option value="keep">Manter os atuais</option></select></label>');if(choice)await grantTemporary(this.actor,choice.amount,choice.form.elements.choice.value);}),
       hitDie:guarded(async function(){const pools=this.actor.system.hitDice.pools??[];if(pools.length<2)return spendHitDie(this.actor,pools[0]?.faces);const faces=await dialog().prompt({window:{title:"Escolher Dado de Vida"},content:`<label>Tipo<select name="faces">${pools.filter(p=>p.available>0).map(p=>`<option value="${p.faces}">d${p.faces} · ${p.available} disponíveis</option>`).join("")}</select></label>`,ok:{callback:(_e,_b,app)=>Number(app.element.querySelector("form").elements.faces.value)}});if(faces)return spendHitDie(this.actor,faces);}),
-      startRest:guarded(async function(){await startLongRest(this.actor);ui.notifications.info("Início do descanso longo registrado no tempo do mundo.");}),
-      startShortRest:guarded(async function(){await startLongRest(this.actor,"short");ui.notifications.info("Início do descanso curto registrado.");}),
-      finishShortRest:guarded(function(){return finishShortRest(this.actor);}),
-      finishRest:guarded(async function(){
-        const pools=this.actor.system.hitDice.pools??[];let selected=null;
-        if(pools.length>1){const limit=Math.min(pools.reduce((sum,p)=>sum+p.max-p.available,0),Math.max(1,Math.floor(this.actor.system.hitDice.max/2)));selected=await dialog().prompt({window:{title:"Recuperar Dados de Vida"},content:`<p>Escolha ${limit} Dado(s) de Vida.</p>${pools.map(p=>`<label>d${p.faces} — ${p.max-p.available} gastos<input type="number" min="0" max="${p.max-p.available}" name="dice-${p.faces}" value="0"></label>`).join("")}`,ok:{callback:(_e,_b,app)=>Object.fromEntries(pools.map(p=>[p.faces,Number(app.element.querySelector("form").elements.namedItem(`dice-${p.faces}`).value)]))}});if(!selected)return;}
-        await finishLongRest(this.actor,undefined,selected);
+      startRest:guarded(function(){return longRestDialog(this.actor);}),
+      startShortRest:guarded(function(){return shortRestDialog(this.actor);}),
+      finishShortRest:guarded(async function(){
+        return shortRestDialog(this.actor);
       }),
+      finishRest:guarded(function(){return longRestDialog(this.actor);}),
       addResource:guarded(async function(){if(!this.actor.isOwner)throw new Error("Sem permissão.");await this.actor.update({"system.resources":[...this.actor.system.resources.map(r=>({...r})),{id:foundry.utils.randomID(),name:"Novo recurso",value:0,max:0,recovery:"none",source:""}]});}),
       awardAmbition:guarded(async function(){const choice=await amountDialog("Conceder Pontos de Ambição");if(choice){const result=await awardAmbition(this.actor,choice.amount);ui.notifications.info(`${result.awarded} PA concedidos; ${result.lost} excedentes ao limite.`);}}),
       deleteItem:guarded(async function(event,target){if(!this.actor.isOwner)throw new Error("Sem permissão.");const item=this.actor.items.get(target.dataset.itemId);if(item?.getFlag("oprpg-native","grantReceipt"))throw new Error("Este item pertence a uma escolha de progressão. Confira sua origem na janela de Progressão antes de removê-lo.");if(item&&await dialog().confirm({window:{title:"Remover conteúdo"},content:`<p>Remover ${escape(item.name)} desta ficha?</p>`}))await item.delete();}),
@@ -113,17 +160,13 @@ export class OPRPGActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       createItem: guarded(async function (event, target) {
         if (!this.actor.isOwner) throw new Error("Sem permissão de edição.");
         const type = target.dataset.type;
-        if (!Object.hasOwn(CATEGORIES, type) || type === "species") throw new Error("Tipo inválido.");
+        if (!Object.hasOwn(CATEGORIES, type) || ["species","style"].includes(type)) throw new Error("Raças e estilos são escolhidos no catálogo oficial.");
         if (type === "legendary" && (!game.user.isGM || this.actor.type !== "npc")) throw new Error("Ações lendárias são configuradas pelo mestre em NPCs nesta versão.");
         const [item] = await this.actor.createEmbeddedDocuments("Item", [{name: `Nova ${CATEGORIES[type]}`, type}]);
         return item.sheet.render({force: true});
       }),
       applySpecies:guarded(function(){return chooseOrigin(this.actor,"species");}),
-      createSpecies: guarded(async function () {
-        if (!game.user.isGM) throw new Error("Nesta versão, o mestre cria as espécies.");
-        const item = await Item.create({name: "Nova espécie personalizada", type: "species", system: {origin: "homebrew"}});
-        return item.sheet.render({force: true});
-      })
+
     }
   };
   static PARTS = {body: {template: "systems/oprpg-native/templates/actor-expanded.hbs",templates:["systems/oprpg-native/templates/groups.hbs"], scrollable: [""]}};
@@ -139,8 +182,15 @@ export class OPRPGActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   async _onRender(context,options) {
     await super._onRender(context,options);
     editToggle(this,context,this.actor.isOwner);
+    for(const input of this.element.querySelectorAll('[name="system.vitality.value"],[name="system.power.value"]')){
+      const resource=input.name.includes('vitality')?this.actor.system.vitality:this.actor.system.power;
+      if(!Number.isFinite(resource?.max))continue;
+      input.max=String(resource.max);
+      input.addEventListener('change',()=>{if(input.value!==''&&Number.isFinite(Number(input.value)))input.value=String(boundedValue(Number(input.value),resource.max));},{capture:true});
+    }
     for(const field of this.element.querySelectorAll('.op-body input,.op-body select,.op-body textarea,.op-sidebar input,.op-sidebar select,.op-sidebar textarea'))field.disabled=!context.editable;
-    for(const button of this.element.querySelectorAll('[data-action="rollAttribute"],[data-action="rollSkill"],[data-action="useItem"]'))button.disabled=!context.canUse;
+    bindItemLists(this);bindTechniqueList(this);
+    for(const button of this.element.querySelectorAll('[data-action="rollInitiative"],[data-action="rollAttribute"],[data-action="rollSkill"],[data-action="useItem"]'))button.disabled=!context.canUse;
     for(const portrait of this.element.querySelectorAll('.op-portrait img[data-fallback]')) {
       const fallback=()=>{if(portrait.dataset.fallbackUsed)return;portrait.dataset.fallbackUsed="true";portrait.src=portrait.dataset.fallback;};
       portrait.addEventListener("error",fallback,{once:true});
@@ -151,12 +201,17 @@ export class OPRPGActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     const context = await super._prepareContext(options);
     const system = this.actor.system;
     const numbers=this.actor.type==="ship"?null:actorNumbers(system,this.actor.type);
+    const fruitAvailable=hasFruit(system,[...this.actor.items]);
+    if(this.activeTab==='fruit'&&!fruitAvailable)this.activeTab='details';
     const showAssistant = game.settings.get("oprpg-native", "creationAssistant") && this.actor.type === "character";
     if ((this.activeTab === "creation" && !showAssistant)||(this.actor.type==="ship"&&!['details','inventory','effects'].includes(this.activeTab))) this.activeTab = "details";
     const tab = this.activeTab ?? "details";
-    const groups=Object.entries(CATEGORIES).filter(([type])=>type!=="species"&&(type!=="legendary"||(game.user.isGM&&this.actor.type==="npc"))).map(([type,label])=>({type,label,items:this.actor.items.filter(item=>item.type===type).map(item=>({id:item.id,img:item.img,name:item.name,grade:item.type==="technique"?item.system.grade:null,homebrew:item.system.origin==="homebrew",consumable:item.system.equipment?.consumable,trainingProgress:item.type==="training"?(item.system.training?.state==="learned"?"Aprendido":`${item.system.training?.completedDays??0}/${item.system.training?.requiredDays??0} dias`):null,inTraining:item.system.training?.state==="inProgress",quantity:item.system.equipment?.quantity,weight:item.system.equipment?.weight,equipped:item.system.equipment?.equipped,isEquipment:["weapon","equipment"].includes(item.type),canUse:Boolean(item.system.activity)&&item.system.activity.activation!=="passive",activation:ACTIVATIONS[item.system.activity?.activation],cost:item.system.activity?.powerCost}))}));
+    const groups=Object.entries(CATEGORIES).filter(([type])=>type!=="species"&&(type!=="legendary"||(game.user.isGM&&this.actor.type==="npc"))).map(([type,label])=>({type,label,canCreate:!['species','style'].includes(type),allowHomebrewFilter:!['species','style'].includes(type),canAddLibrary:['weapon','equipment','feature','technique','auxiliary','hakiTalent','fruit','personalization'].includes(type),items:this.actor.items.filter(item=>item.type===type).map(item=>({id:item.id,img:contentArtwork(item),name:item.name,favorite:(system.favorites??[]).includes(item.id),grade:item.type==="technique"?item.system.grade:null,homebrew:item.system.origin==="homebrew",consumable:item.system.equipment?.consumable,trainingProgress:item.type==="training"?(item.system.training?.state==="learned"?"Aprendido":item.system.training?.state==="inProgress"?`Em andamento · ${item.system.training.completedDays}/${item.system.training.requiredDays} dias`:"Não iniciado"):null,inTraining:item.system.training?.state==="inProgress",quantity:item.system.equipment?.quantity,weight:item.system.equipment?.weight,equipped:item.system.equipment?.equipped,isEquipment:["weapon","equipment"].includes(item.type),canUse:Boolean(item.system.activity)&&item.system.activity.activation!=="passive",activation:ACTIVATIONS[item.system.activity?.activation],...itemSummary(item,system,[...this.actor.items])}))}));
     const groupList=types=>groups.filter(group=>types.includes(group.type));
-    return {...context, actor: this.actor, system, editable: this.actor.isOwner&&this.editMode!==false, canUse:this.actor.isOwner, isShip:this.actor.type==="ship", isNPC: this.actor.type === "npc", isGM: game.user.isGM,
+    const summary=sheetSummary(system,[...this.actor.items]);
+    for(const profession of summary.professions)profession.description=await foundry.applications.ux.TextEditor.implementation.enrichHTML(profession.description,{secrets:this.actor.isOwner,relativeTo:this.actor});
+    return {...context,...summary,learnedHaki:learnedHakiSummary(this.actor), actor: this.actor, system, editable: this.actor.isOwner&&this.editMode!==false, canUse:this.actor.isOwner, isShip:this.actor.type==="ship", isNPC: this.actor.type === "npc", isGM: game.user.isGM,
+      canChooseProfessions:true,
       portraitImage:system.appearance?.portraitMode==="token"?(this.actor.token?.texture?.src??this.actor.prototypeToken?.texture?.src??this.actor.img):this.actor.img,
       tokenPortrait:system.appearance?.portraitMode==="token",isCharacter:this.actor.type==="character",
       sidebarCollapsed:Boolean(this.sidebarCollapsed),
@@ -164,15 +219,21 @@ export class OPRPGActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       favorites:this.actor.items.filter(item=>(system.favorites??[]).includes(item.id)).map(item=>({id:item.id,name:item.name,img:item.img,canUse:Boolean(item.system.activity)&&item.system.activity.activation!=="passive"})),
       styleLevels:system.progression?.styles??[],hasAutomatedLevels:Boolean(system.progression?.styles?.length),primaryStyleName:primaryStyle(system)?.name||system.identity?.combatStyle,headerArt:encodeURI(headerImage(system)).replaceAll("'","%27").replaceAll('"',"%22").replaceAll("(","%28").replaceAll(")","%29"),
       initiativeBonus:numbers?.initiative??0,
-      healthPercent:Math.max(0,Math.min(100,100*system.vitality.value/(system.vitality.max||1))),powerPercent:system.power?Math.max(0,Math.min(100,100*system.power.value/(system.power.max||1))):0,
+      hitDicePercent:Math.max(0,Math.min(100,100*(system.hitDice?.available??0)/(system.hitDice?.max||1))),healthPercent:Math.max(0,Math.min(100,100*system.vitality.value/(system.vitality.max||1))),powerPercent:system.power?Math.max(0,Math.min(100,100*system.power.value/(system.power.max||1))):0,
       showAssistant, detailsActive: tab === "details", contentActive: tab === "content", creationActive: tab === "creation",
-      tabs:SHEET_TABS.filter(item=>(item.id!=="creation"||showAssistant)&&(this.actor.type!=="ship"||["details","inventory","effects"].includes(item.id))).map(item=>({...item,active:item.id===tab})),
+      hasFruit:fruitAvailable,
+      compactTechniqueSections:techniqueSections([...this.actor.items].map(item=>({id:item.id,name:item.name,img:item.img,type:item.type,system:item.system,actor:item.actor,favorite:(system.favorites??[]).includes(item.id)})),item=>{
+        const selected=activityFor(item);
+        const extra=activeItemRules(system,[...this.actor.items]).filter(rule=>rule.kind==='attackBonus'&&(!rule.key||rule.key===item.type||rule.key===item.system.identifier)).reduce((sum,rule)=>sum+rule.value,0);
+        return {...selected,roll:techniqueRollPreview(system,this.actor.type,selected,extra),rollTitle:'Usar técnica; conferir custos e condições'};
+      }),
+      tabs:SHEET_TABS.filter(item=>(item.id!=="fruit"||fruitAvailable)&&(item.id!=="creation"||showAssistant)&&(this.actor.type!=="ship"||["details","inventory","effects"].includes(item.id))).map(item=>({...item,active:item.id===tab})),
       active:Object.fromEntries(SHEET_TABS.map(item=>[item.id,item.id===tab])),
       attributes: numbers?['strength','dexterity','constitution','will','wisdom','presence'].map(id=>({id,...numbers.attributes[id],abbreviation:{strength:"FOR",dexterity:"DES",constitution:"CON",wisdom:"SAB",presence:"PRE",will:"VON"}[id]})):[],
       skills:system.skills?Object.entries(SKILLS).map(([id,config])=>({id,...config,...system.skills[id]})):[],
-      skillGroups:system.skills?['strength','dexterity','will','wisdom','presence'].map(attribute=>({label:ATTRIBUTES[attribute],skills:Object.entries(SKILLS).filter(([,config])=>config.attribute===attribute).map(([id,config])=>({id,...config,...system.skills[id],abbreviation:{strength:"FOR",dexterity:"DES",wisdom:"SAB",presence:"PRE",will:"VON"}[attribute]}))})):[],
+      skillGroups:system.skills?['strength','dexterity','will','wisdom','presence'].map(attribute=>({label:ATTRIBUTES[attribute],skills:Object.entries(SKILLS).filter(([,config])=>config.attribute===attribute).map(([id,config])=>({id,...config,...system.skills[id],calculation:summary.skillDetails[id],abbreviation:{strength:"FOR",dexterity:"DES",wisdom:"SAB",presence:"PRE",will:"VON"}[attribute]}))})):[],
       checklist: this.actor.type==="ship"?[]:creationChecklist(system),
-      inventoryGroups:groupList(["weapon","equipment"]),featureGroups:groupList(["feature","style","species","background","personalization","legendary"]),techniqueGroups:groupList(["technique","auxiliary"]),trainingGroups:groupList(["training"]),professionGroups:groupList(["profession"]),powerGroups:groupList(["hakiTalent","fruit"]),
+      inventoryGroups:groupList(["weapon","equipment"]),featureGroups:groupList(["feature","style","species","background","personalization","legendary"]),techniqueGroups:groupList(["technique","auxiliary"]),trainingGroups:groupList(["training"]),professionGroups:groupList(["profession"]),powerGroups:groupList(["hakiTalent"]),fruitGroups:groupList(["fruit"]),
       effects:(this.actor.effects??[]).map(effect=>({id:effect.id,name:effect.name,img:effect.img,disabled:effect.disabled,duration:effect.duration?.label??""})),
       species: game.items.filter(item => item.type === "species" && item.testUserPermission(game.user, "OBSERVER")).map(item => ({id: item.id, name: item.name, homebrew: item.system.origin === "homebrew"})),
       groups
@@ -233,7 +294,7 @@ export class OPRPGItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
     })}
   };
   static PARTS = {body: {template: "systems/oprpg-native/templates/item.hbs", scrollable: [""]}};
-  async _onRender(context,options){await super._onRender(context,options);editToggle(this,context,this.item.isOwner);for(const field of this.element.querySelectorAll('.op-body input,.op-body select,.op-body textarea'))field.disabled=!context.editable;}
+  async _onRender(context,options){await super._onRender(context,options);editToggle(this,context,this.item.isOwner&&!['species','style'].includes(this.item.type));for(const field of this.element.querySelectorAll('.op-body input,.op-body select,.op-body textarea'))field.disabled=!context.editable;}
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
     const source=this.item.system;
@@ -241,11 +302,11 @@ export class OPRPGItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
     if(variantIndex<0)this.selectedVariant=null;
     const selected=source.activity?activityFor(this.item,this.selectedVariant):null;
     const system={...source,activity:selected?.activity??source.activity,resolution:selected?.resolution??source.resolution};
-    return {...context, item: this.item, system, editable: this.item.isOwner&&this.editMode!==false, category: CATEGORIES[this.item.type],
-      itemRules:(source.rules??[]).map((rule,index)=>({...rule,index,kindLabel:RULE_KINDS[rule.kind]??rule.kind})),isTraining:this.item.type==="training",hasAdvancement:["species","style","background","training","feature"].includes(this.item.type),advancementSteps:(source.advancements??[]).map((step,index)=>({...step,index,scopeLabel:step.scope==="character"?"personagem":"estilo"})),trainingExceptions:(source.training?.modifiers??[]).map((rule,index)=>({...rule,index,name:rule.target})),
+    return {...context, item: this.item,itemImage:contentArtwork(this.item), system, editable: this.item.isOwner&&this.editMode!==false, category: CATEGORIES[this.item.type],
+      itemRules:(source.rules??[]).map((rule,index)=>({...rule,index,kindLabel:RULE_KINDS[rule.kind]??rule.kind,keyLabel:ATTRIBUTES[rule.key]??SKILLS[rule.key]?.label??DAMAGE_TYPES[rule.key]??rule.key})),isTraining:this.item.type==="training",hasAdvancement:["species","style","background","training","feature"].includes(this.item.type),advancementSteps:(source.advancements??[]).map((step,index)=>({...step,index,scopeLabel:step.scope==="character"?"personagem":"estilo"})),trainingExceptions:(source.training?.modifiers??[]).map((rule,index)=>({...rule,index,name:rule.target})),
       isSpecies: this.item.type === "species", isTechnique: this.item.type === "technique", hasActivity: Boolean(system.activity),
       isHakiTalent:this.item.type==="hakiTalent",hakiFocus:selectOptions({armament:"Armamento",observation:"Observação",king:"Rei"},system.hakiTalent?.focus),hakiStages:selectOptions({Latente:"Latente",Inexperiente:"Inexperiente",Treinado:"Treinado",Perito:"Perito"},system.hakiTalent?.minimumStage),
-      styleProficiency:system.activity?.proficiencyMode==="style",ammunitionOptions:(this.item.actor?.items??[]).filter(item=>["equipment","weapon"].includes(item.type)).map(item=>({id:item.id,name:item.name,selected:item.id===system.activity?.ammunitionItem})),canRoll: Boolean(this.item.actor?.isOwner && system.activity && system.activity.activation!=="passive"),isProgression:this.item.type==="style",isProfession:this.item.type==="profession",isEquipment:["weapon","equipment"].includes(this.item.type),
+      styleProficiency:system.activity?.proficiencyMode==="style",ammunitionOptions:(this.item.actor?.items??[]).filter(item=>["equipment","weapon"].includes(item.type)).map(item=>({id:item.id,name:item.name,selected:item.id===system.activity?.ammunitionItem})),canRoll: Boolean(this.item.actor?.isOwner && system.activity && system.activity.activation!=="passive"),isProgression:this.item.type==="style",isWithoutProfession:this.item.system.identifier==="sem-profissao",isProfession:this.item.type==="profession",isEquipment:["weapon","equipment"].includes(this.item.type),
       professionRanks:selectOptions({professional:"Profissional",specialist:"Especialista",master:"Mestre",grandMaster:"Grão-Mestre"},system.profession?.rank),
       activityPath:variantIndex<0?"system.activity":`system.variants.${variantIndex}.activity`,resolutionPath:variantIndex<0?"system.resolution":`system.variants.${variantIndex}.resolution`,
       variants:(source.variants??[]).map(variant=>({id:variant.id,name:variant.name,selected:variant.id===this.selectedVariant})),hasSelectedVariant:variantIndex>=0,

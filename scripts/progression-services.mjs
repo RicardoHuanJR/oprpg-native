@@ -1,8 +1,11 @@
+import {synchronizeRoyalAmbition} from './haki.mjs';
 import {applySpecialTraining,syncKujaTraining} from './training-specials.mjs';
+import {professionPlan} from './profession.mjs';
 import {actorCommand} from './services.mjs';
 import {levelPlan,validateChoices,trainingQuote,identifier} from './advancement.mjs';
 import {attributeModifier} from './rules.mjs';
 import {CATALOG} from './catalog.mjs';
+import {contentLibrary} from './content-library.mjs';
 export {CATALOG};
 const clone=value=>JSON.parse(JSON.stringify(value));
 export function catalogDocument(id) {
@@ -13,6 +16,7 @@ export async function resolveContent(uuid) {
  if(uuid.startsWith('catalog:'))return catalogDocument(uuid.slice(8));
  const doc=await fromUuid(uuid);
  if(!doc||doc.documentName!=='Item'||!doc.testUserPermission(game.user,'OBSERVER'))throw new Error('Conteúdo indisponível ou sem permissão.');
+ if(['species','style'].includes(doc.type)){const official=CATALOG.find(entry=>entry.type===doc.type&&entry.system.identifier===doc.system.identifier);if(!official)throw new Error('Raças e estilos personalizados não estão disponíveis.');return catalogDocument(official.id);}
  return doc;
 }
 function receipts(actor){return clone(actor.system.progression.receipts??[]);}
@@ -25,8 +29,8 @@ async function grantDocuments(actor,benefits,receipt) {
    delete source._id;delete source.id;delete source.uuid;delete source.folder;delete source.ownership;delete source._stats;
    source.flags={...source.flags,'oprpg-native':{grantReceipt:receipt}};data.push(source);
   }else if(benefit.kind==='trait'){
-   const basic=CATALOG.find(item=>item.system.tags?.includes('basic-ability')&&identifier(item.name)===identifier(benefit.key));
-   data.push(basic?{name:basic.name,type:basic.type,img:basic.img,system:clone(basic.system),flags:{'oprpg-native':{grantReceipt:receipt}}}:{name:benefit.key,type:'feature',system:{activity:{activation:'passive'},description:'Escolha registrada na progressão. Configure os benefícios conforme a fonte.',source:'Escolha de progressão'},flags:{'oprpg-native':{grantReceipt:receipt}}});
+   const basic=contentLibrary().find(item=>item.system.tags?.includes('basic-ability')&&identifier(item.name)===identifier(benefit.key));
+   data.push(basic?{name:basic.name,type:basic.type,img:basic.img,system:clone(basic.toObject?.().system??basic.system),flags:{'oprpg-native':{grantReceipt:receipt}}}:{name:benefit.key,type:'feature',system:{activity:{activation:'passive'},description:'Escolha registrada na progressão. Configure os benefícios conforme a fonte.',source:'Escolha de progressão'},flags:{'oprpg-native':{grantReceipt:receipt}}});
   }
  }
  return data.length?actor.createEmbeddedDocuments('Item',data):[];
@@ -37,6 +41,14 @@ async function commitReceipt(actor,receipt,benefits,updates) {
  try {await actor.update({...updates,'system.progression.receipts':[...receipts(actor),receipt]});}
  catch(error){if(granted.length)await actor.deleteEmbeddedDocuments('Item',granted.map(item=>item.id));throw error;}
  return receipt;
+}
+export function acquireProfession(actor,source,skills=[],options={}){
+ return actorCommand(actor,async()=>{
+  const plan=professionPlan(actor,source,skills,options);
+  const benefits=[{kind:'item',key:source.uuid,amount:1},...plan.benefits];
+  const receipt={id:foundry.utils.randomID(),kind:'profession',source:source.uuid,name:source.name,level:actor.system.progression.level,styleLevel:0,styleKey:'',hpRoll:0,baseHP:0,movement:0,benefits,items:[]};
+  return commitReceipt(actor,receipt,benefits,{});
+ });
 }
 export function advanceStyle(actor,style,choices,options={}) {
  return actorCommand(actor,async()=>{
@@ -49,7 +61,7 @@ export function advanceStyle(actor,style,choices,options={}) {
   if(!actor.system.progression.styles.length&&actor.system.progression.level>1)throw new Error('Este personagem já possui níveis manuais. Registre primeiro a distribuição existente; não reaplique benefícios iniciais.');
   const receipt={id,kind:'level',source:style.uuid||'',name:style.name,level:plan.next,styleLevel:plan.styleLevel,styleKey:plan.key,hpRoll:plan.hpRoll,baseHP:0,movement:0,benefits:plan.benefits,items:[]};
   return commitReceipt(actor,receipt,plan.benefits,{'system.progression.styles':plan.styles,'system.progression.level':plan.next,'system.training.points':actor.system.training.points+plan.pt});
- }).then(async receipt=>{if(actor.system.identity.species.name)await synchronizeCulturalPoints(actor);await actorCommand(actor,()=>syncKujaTraining(actor));return receipt;});
+ }).then(async receipt=>{if(actor.system.identity.species.name)await synchronizeCulturalPoints(actor);await actorCommand(actor,()=>syncKujaTraining(actor));await synchronizeRoyalAmbition(actor);return receipt;});
 }
 export function applyOrigin(actor,item,choices) {
  return actorCommand(actor,async()=>{
@@ -68,13 +80,16 @@ export function applyOrigin(actor,item,choices) {
 }
 export function removeOrigin(actor,id) {
  return actorCommand(actor,async()=>{
-  const existing=receipts(actor).find(receipt=>receipt.id===id);if(!existing||!['species','background'].includes(existing.kind))throw new Error('Origem inválida.');
-  if(actor.items.some(item=>item.type==='training'&&item.system.training?.state!=='unlearned'))throw new Error('Confira os treinamentos dependentes antes de trocar a origem.');
+  const existing=receipts(actor).find(receipt=>receipt.id===id);if(!existing||!['species','background','profession'].includes(existing.kind))throw new Error('Origem ou profissão inválida.');
+  if(existing.kind!=='profession'&&actor.items.some(item=>item.type==='training'&&item.system.training?.state!=='unlearned'))throw new Error('Confira os treinamentos dependentes antes de trocar a origem.');
   const update={'system.progression.receipts':receipts(actor).filter(receipt=>receipt.id!==id)};
-  if(existing.kind==='species')update['system.identity.species']={uuid:'',name:'',identifier:'',ancestries:[],origin:'homebrew',version:'',traits:''};else update['system.personal.background']='';
+  if(existing.kind==='species')update['system.identity.species']={uuid:'',name:'',identifier:'',ancestries:[],origin:'homebrew',version:'',traits:''};else if(existing.kind==='background')update['system.personal.background']='';
+  if(existing.kind==='profession')update['system.resources']=actor.system.resources.filter(resource=>!(existing.items??[]).some(itemId=>resource.id.startsWith(`profession:${itemId}:`)));
+  const before={'system.progression.receipts':receipts(actor),'system.resources':clone(actor.system.resources),'system.identity.species':clone(actor.system.identity.species),'system.personal.background':actor.system.personal.background};
   await actor.update(update);
   const owned=(existing.items??[]).filter(id=>actor.items.get(id)?.getFlag('oprpg-native','grantReceipt')===existing.id);
-  if(owned.length)await actor.deleteEmbeddedDocuments('Item',owned);
+  try {if(owned.length)await actor.deleteEmbeddedDocuments('Item',owned);}
+  catch(error){await actor.update(before);throw error;}
  });
 }
 export function synchronizeCulturalPoints(actor) {

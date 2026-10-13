@@ -1,3 +1,5 @@
+import {professionRollTotal,professionReserve} from './profession.mjs';
+import {hakiCommonDamage,hakiMaximizesCommonDamage} from './haki-effects.mjs';
 import {actorCommand,damageInside,healActor} from './services.mjs';
 import {performCommonAction,recordMovement} from './action-services.mjs';
 import {combatContext,activationPlan} from './combat-rules.mjs';
@@ -29,10 +31,10 @@ export async function unarmedAttack(actor,{advantage=false,disadvantage=false,ra
   const roll=await new Roll(`${advantage===disadvantage?'1d20':advantage?'2d20kh':'2d20kl'} + ${modifier+numbers.proficiency+(giant?1:0)-2*numbers.exhaustion}`).evaluate();
   const natural=roll.dice.find(die=>die.faces===20).results.find(value=>value.active!==false&&!value.discarded).result;
   const current=actor.system.combat.unarmedDamage;const formula=(actor.statuses?.has('empowered')||giant)&&['1','1d4','1d6','1d8','1d10'].includes(current)?'1d12':current;
-  const damageFormula=`${formula} + ${Math.max(0,modifier)}`;
-  const operation={requestId:foundry.utils.randomID(),itemUUID:null,activity:{attribute:'strength',proficient:true,damageFormula},resolution:{kind:'attack',damageType:'bludgeoning'},attack:{natural,total:roll.total},damageFormula,extraDamageComponents:boost.components,unarmed:true};
+  const damageFormula=`${hakiCommonDamage(actor,formula,'bludgeoning')} + ${Math.max(0,modifier)}`;
+  const operation={maximizeDamage:hakiMaximizesCommonDamage(actor,natural,natural===20),requestId:foundry.utils.randomID(),itemUUID:null,activity:{attribute:'strength',proficient:true,damageFormula},resolution:{kind:'attack',damageType:'bludgeoning'},attack:{natural,total:roll.total},damageFormula,extraDamageComponents:boost.components,unarmed:true};
   await actor.update({'system.combat.state':plan.state,'system.resources':boost.resources,...(boost.round?{'flags.oprpg-native.racialBoostRound':boost.round}:{}),'flags.oprpg-native.lastActivity':operation,'system.rest.startedAt':null});
-  try{await roll.toMessage({speaker:ChatMessage.getSpeaker({actor}),flavor:`Ataque desarmado · dano ${damageFormula}. Não ativa expertise de arma.`});}catch{ui.notifications.warn('Ataque registrado; cartão não enviado.');}
+  try{await roll.toMessage({speaker:ChatMessage.getSpeaker({actor}),flavor:`Ataque desarmado · dano ${damageFormula}. Não ativa expertise de arma.`,flags:{'oprpg-native':{actorUUID:actor.uuid,operation}}});}catch{ui.notifications.warn('Ataque registrado; cartão não enviado.');}
   const state=lifecycleOf(actor);if(actor.statuses?.has('burned')&&state.burnedEpoch!==turnMark(actor)){state.burnedEpoch=turnMark(actor);await actor.update({'flags.oprpg-native.lifecycle':state});await damageInside(actor,{components:[{type:'fire',amount:(await new Roll('1d6').evaluate()).total}],bypassMitigation:true,bypassTemporary:true});}
   return operation;
  });
@@ -54,19 +56,27 @@ export async function mountCreature(actor,mount,{dismount=false,confirmed=false,
  if(dismount&&previousMount?.getFlag('oprpg-native','controlledMount')?.riderUUID===actor.uuid)await previousMount.update({'flags.oprpg-native.controlledMount':null});
  if(controlled&&!dismount){await mount.update({'flags.oprpg-native.controlledMount':{riderUUID:actor.uuid,combatId:game.combat.id}});await game.combat.setInitiative(mountTurns[0].id,riderTurn.initiative);}
 }
-export async function professionOperation(item,{attribute='wisdom',skill=null,cost=0,difficulty=0,die=0,restoration=false,target=null,resource='vitality',confirmed=false}={}){
+export async function professionOperation(item,{attribute='wisdom',skill=null,cost=0,difficulty=0,die=0,restoration=false,target=null,resource='vitality',confirmed=false,advantage=false,forceSuccess=false}={}){
  const actor=item.actor;if(!actor?.isOwner||item.type!=='profession'||!confirmed)throw new Error('Confirme ferramenta, tempo, alvo e requisitos da característica profissional.');
- const quote=professionBenefitPlan({rank:item.system.profession.rank,cost,difficulty,die,restoration});
+ const rank=item.system.profession.rank;
+ if(advantage&&rank==='professional'||forceSuccess&&rank!=='grandMaster')throw new Error('Graduação insuficiente para este benefício.');
+ const quote=professionBenefitPlan({rank,cost,difficulty,die,restoration});
  if(!actor.system.attributes[attribute]||skill&&!actor.system.skills[skill])throw new Error('Selecione um teste válido.');
  if(restoration&&target?.statuses?.has('suffocated')&&resource==='vitality')throw new Error('Alvo sufocado não pode recuperar PV.');
  if(restoration&&(!target?.isOwner||!['vitality','power'].includes(resource)))throw new Error('Selecione o recurso e um alvo controlável.');
  const result=await actorCommand(actor,async()=>{
   if(actor.system.currency<quote.cost)throw new Error('Bellys insuficientes.');
-  const modifier=skill?actor.system.skills[skill].total:actorNumbers(actor.system,actor.type).attributes[attribute].modifier-2*actor.system.exhaustion;
-  const roll=await new Roll(`1d20 + ${modifier}`).evaluate();const success=roll.total>=quote.difficulty;
-  await actor.update({'system.currency':actor.system.currency-quote.cost,'system.rest.startedAt':null});
+  const modifier=skill?actor.system.skills[skill].total+(actor.system.skills[skill].proficient?0:actor.system.proficiency.bonus):actorNumbers(actor.system,actor.type).attributes[attribute].modifier+actor.system.proficiency.bonus-2*actor.system.exhaustion;
+  const resources=actor.system.resources.map(resource=>({...resource}));
+  if(advantage)professionReserve(resources,item,'advantage');
+  const roll=await new Roll(`${advantage?'2d20kh':'1d20'} + ${modifier}`).evaluate();
+  const natural=roll.dice.find(die=>die.faces===20)?.results.find(result=>result.active)?.result??20;
+  const total=professionRollTotal(roll.total,natural,rank);
+  let success=total>=quote.difficulty;
+  if(!success&&forceSuccess){professionReserve(resources,item,'success');success=true;}
+  await actor.update({'system.currency':actor.system.currency-quote.cost,'system.rest.startedAt':null,'system.resources':resources});
   const restored=success&&restoration&&quote.die?Math.max(0,(await new Roll(`1d${quote.die}`).evaluate()).total):0;
-  try{await roll.toMessage({speaker:ChatMessage.getSpeaker({actor}),flavor:`${item.name} · CD ${quote.difficulty} · ${quote.cost} ฿ · ${success?'sucesso':'falha'}`});}catch{}
+  try{await roll.toMessage({speaker:ChatMessage.getSpeaker({actor}),flavor:`${item.name} · CD ${quote.difficulty} · ${quote.cost} ฿ · ${success?'sucesso':'falha'} · resultado profissional ${total}`});}catch{}
   return {success,restored,quote};
  });
  if(result.restored){if(resource==='vitality')await healActor(target,result.restored);else await actorCommand(target,()=>target.update({'system.power.value':Math.min(target.system.power.max,target.system.power.value+result.restored)}));}

@@ -1,6 +1,6 @@
 import {ATTRIBUTES,attributeModifier} from './rules.mjs';
 import {SKILLS} from './engine.mjs';
-import {CATALOG} from './catalog.mjs';
+import {contentLibrary,contentReference} from './content-library.mjs';
 const copy=value=>JSON.parse(JSON.stringify(value));
 const integer=(value,min,max,label)=>{if(!Number.isInteger(value)||value<min||value>max)throw new Error(`${label} inválido.`);return value;};
 export const identifier=name=>String(name).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
@@ -21,6 +21,7 @@ export function headerImage(system) {
  return `/systems/oprpg-native/theme/classes/${file||'default'}.webp`;
 }
 export function validateChoices(steps,choices,system) {
+ const library=contentLibrary();
  const benefits=[];const projected=Object.fromEntries(Object.keys(ATTRIBUTES).map(id=>[id,system.attributes?.[id]?.base??10]));
  const projectedSkills=new Set(Object.entries(system.skills??{}).filter(([,skill])=>skill.proficient).map(([key])=>key));
  for(const step of steps) {
@@ -33,7 +34,8 @@ export function validateChoices(steps,choices,system) {
    if(step.kind==='attribute') {
     if(!Object.hasOwn(ATTRIBUTES,key))throw new Error('Atributo desconhecido.');
     const amount=integer(step.amount,1,10,'Aumento');projected[key]+=amount;
-    if(projected[key]>(step.cap||20))throw new Error(`${ATTRIBUTES[key]} ultrapassa o limite ${step.cap||20}.`);
+    const cap=Math.max(step.cap||20,key==='will'&&system.haki?.kingGift?26:0);
+    if(projected[key]>cap)throw new Error(`${ATTRIBUTES[key]} ultrapassa o limite ${cap}.`);
     benefits.push({kind:'attribute',key,amount});
    }else if(step.kind==='skill') {
     if(!Object.hasOwn(SKILLS,key))throw new Error('Perícia desconhecida.');
@@ -51,23 +53,25 @@ export function validateChoices(steps,choices,system) {
  }
  const paths=[...(system.progression?.receipts??[]).flatMap(r=>r.benefits??[]),...benefits].filter(b=>b.kind==='trait'&&b.key.startsWith('Caminho do ')).map(b=>'path:'+identifier(b.key));
  for(const benefit of benefits.filter(b=>b.kind==='item')) {
-  const item=CATALOG.find(item=>`catalog:${item.id}`===benefit.key);
+  const item=contentReference(benefit.key,library);
   const path=item?.system.tags?.find(tag=>tag.startsWith('path:'));
   if(path&&paths.length&&!paths.includes(path))throw new Error('A técnica não pertence ao caminho escolhido.');
  }
- const basicName=b=>b.kind==='trait'?CATALOG.find(item=>item.system.tags?.includes('basic-ability')&&identifier(item.name)===identifier(b.key))?.id:b.kind==='item'?CATALOG.find(item=>`catalog:${item.id}`===b.key&&item.system.tags?.includes('basic-ability'))?.id:null;
+ const basicName=b=>{const item=b.kind==='trait'?library.find(item=>item.system.tags?.includes('basic-ability')&&identifier(item.name)===identifier(b.key)):b.kind==='item'?contentReference(b.key,library):null;return item?.system.tags?.includes('basic-ability')?(item.system.identifier||identifier(item.name)):null;};
  const oldBasic=(system.progression?.receipts??[]).flatMap(r=>r.benefits??[]).map(basicName).filter(Boolean);
  const newBasic=benefits.map(basicName).filter(Boolean);
  if(new Set([...oldBasic,...newBasic]).size<oldBasic.length+newBasic.length)throw new Error('Uma Habilidade Básica não pode ser escolhida novamente, incluindo a Inata (Jogador 2.1, p.38).');
  return benefits;
 }
 export function dependentChoices(steps,choices) {
+ const library=contentLibrary();
  return steps.filter(step=>step.kind==='item').flatMap(step=>(choices[step.id]??[]).flatMap(key=>{
-  const item=CATALOG.find(item=>`catalog:${item.id}`===key);
+  const item=contentReference(key,library);
   return (item?.system.advancements??[]).map(child=>({...child,id:`${step.id}:${key}:${child.id}`}));
  }));
 }
 export function levelSteps(system,style,{multiStyle=false}={}) {
+ const library=contentLibrary();
  const styles=system.progression?.styles??[];const key=style.system.identifier||identifier(style.name);
  const existing=styles.find(entry=>entry.identifier===key);const first=styles.length===0;
  const current=first?0:styles.reduce((sum,entry)=>sum+entry.levels,0);
@@ -82,16 +86,16 @@ export function levelSteps(system,style,{multiStyle=false}={}) {
  const steps=(style.system.advancements??[]).filter(step=>(step.scope==='character'?next:styleLevel)===step.level&&(!step.initialOnly||first)).map(copy);
  if(next<=3) {
   const owned=(system.progression?.receipts??[]).flatMap(r=>r.benefits??[]);
-  const available=CATALOG.filter(item=>item.system.tags?.includes('basic-ability')&&!owned.some(b=>b.kind==='item'&&b.key===`catalog:${item.id}`||b.kind==='trait'&&identifier(b.key)===item.system.identifier));
-  steps.push({id:`basic-ability-${next}`,label:'Habilidade Básica deste nível',kind:'item',count:1,options:available.map(item=>`catalog:${item.id}`),allowRepeat:false,amount:1,cap:20});
+  const available=library.filter(item=>item.system.tags?.includes('basic-ability')&&!owned.some(b=>b.kind==='item'&&contentReference(b.key,library)?.system.identifier===item.system.identifier||b.kind==='trait'&&identifier(b.key)===item.system.identifier));
+  steps.push({id:`basic-ability-${next}`,label:'Habilidade Básica deste nível',kind:'item',count:1,options:available.map(item=>item.uuid),allowRepeat:false,amount:1,cap:20});
  }
  if(styleLevel===1&&style.system.skillProficiencies?.length)steps.unshift({id:'style-skills',label:'Perícias do estilo',kind:'skill',count:first?(style.system.skillCount||2):1,options:style.system.skillProficiencies.filter(id=>!system.skills?.[id]?.proficient),allowRepeat:false,amount:1,cap:20});
  const knownStyles=[...styles.map(style=>style.identifier),key];
  const paths=(system.progression?.receipts??[]).flatMap(r=>r.benefits??[]).filter(b=>b.kind==='trait'&&b.key.startsWith('Caminho do ')).map(b=>'path:'+identifier(b.key));
  for(const type of ['technique','auxiliary']) {
   if(type==='technique'&&!TECHNIQUE_LEVELS[next]||type==='auxiliary'&&![1,6,12].includes(next))continue;
-  const eligible=CATALOG.filter(item=>item.type===type&&(type==='technique'?item.system.grade===TECHNIQUE_LEVELS[next]:item.system.levelRequirement===next)&&item.system.tags?.some(tag=>knownStyles.includes(tag.replace('style:','')))&&(!paths.length||!item.system.tags.some(tag=>tag.startsWith('path:'))||item.system.tags.some(tag=>paths.includes(tag))));
-  if(eligible.length)steps.push({id:`${type}-${next}`,label:type==='technique'?`Técnica de combate — ${TECHNIQUE_LEVELS[next]}º grau`:'Técnica auxiliar',kind:'item',count:1,options:eligible.map(item=>`catalog:${item.id}`),allowRepeat:false,amount:1,cap:20});
+  const eligible=library.filter(item=>item.type===type&&(type==='technique'?item.system.grade===TECHNIQUE_LEVELS[next]:item.system.levelRequirement===next)&&item.system.tags?.some(tag=>knownStyles.includes(tag.replace('style:','')))&&(!paths.length||!item.system.tags.some(tag=>tag.startsWith('path:'))||item.system.tags.some(tag=>paths.includes(tag))));
+  if(eligible.length)steps.push({id:`${type}-${next}`,label:type==='technique'?`Técnica de combate — ${TECHNIQUE_LEVELS[next]}º grau`:'Técnica auxiliar',kind:'item',count:1,options:eligible.map(item=>item.uuid),allowRepeat:false,amount:1,cap:20});
  }
  return {first,next,styleLevel,key,existing,steps,techniqueGrade:TECHNIQUE_LEVELS[next]??null,auxiliaryChoice:[1,6,12].includes(next)};
 }
@@ -109,7 +113,7 @@ export function levelPlan(system,style,choices,{multiStyle=false,hpRoll}={}) {
  else styles.push({key:info.key,identifier:info.key,name:style.name,uuid:style.uuid||'',levels:1,hitDie:die,headerImage:style.system.headerImage||'',equipmentProficiencies:style.system.equipmentProficiencies??[]});
  return {...info,styles,benefits,die,hpRoll:roll,pt:info.next<=10&&info.next%2===0?3:0};
 }
-export function trainingQuote(system,training,learned=[],{creation=false,tutor=false}={}) {
+export function trainingQuote(system,training,learned=[],{creation=false,tutor=false,partner=false}={}) {
  const data=training.system.training; if(!data)throw new Error('Treinamento sem configuração de aprendizado.');
  if(!data.repeatable&&learned.some(item=>item.system.identifier===training.system.identifier&&['learned','inProgress'].includes(item.system.training?.state)))throw new Error('Treinamento já aprendido ou em andamento.');
  const lineage=system.identity?.species?.identifier||identifier(system.identity?.species?.name||'');
@@ -126,7 +130,9 @@ export function trainingQuote(system,training,learned=[],{creation=false,tutor=f
  if(!ignoreRequirements&&!checkRequirements(system,data.requirements))throw new Error('Atributos insuficientes para o treinamento.');
  if(!ignoreRequirements&&data.manualRequirement&&!creation)throw new Error(`Requisito exige conferência do Narrador: ${data.manualRequirement}`);
  if(!creation&&tutorRequired&&!tutor)throw new Error('Este treinamento exige um tutor.');
- if(creation){days=0;tutorRequired=false;}else if(tutor&&!tutorRequired)days=Math.ceil(days/2);
+ if(partner&&(tutorRequired||tutor||creation))throw new Error('Parceiro de Treino requer treino sem tutor obrigatório; escolha apenas uma forma de auxílio e não use na dispensa da criação.');
+ if(creation){days=0;tutorRequired=false;}else if(tutor&&!tutorRequired||partner)days=Math.ceil(days/2);
+ if(partner)sources.push('Parceiro de Treino · Sem Profissão');
  integer(cost,0,100,'Custo em PT');integer(days,0,10000,'Dias de treino');
  if((system.training?.points??0)<cost)throw new Error('Pontos de Treinamento insuficientes.');
  return {cost,days,ignoreRequirements,tutorRequired,sources};

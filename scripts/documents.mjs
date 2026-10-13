@@ -6,16 +6,39 @@ import {ATTRIBUTES, d20Formula} from "./rules.mjs";
 import {SKILLS} from "./engine.mjs";
 import {conditionSet,conditionModifiers} from "./conditions.mjs";
 import {actorNumbers} from "./actor-numbers.mjs";
+import {limitResourceChanges,boundPreparedResources} from './resource-limits.mjs';
 export class OPRPGActor extends foundry.documents.Actor {
-  prepareDerivedData() {
-    super.prepareDerivedData?.();
-    // Garantir os valores do modelo na preparação do documento, inclusive em atores já existentes.
-    this.system.prepareDerivedData?.();
+  async _preUpdate(changes,options,user){
+    if(await super._preUpdate(changes,options,user)===false)return false;
+    if(changes.system||Object.keys(changes).some(key=>key.startsWith('system.'))){
+      const projected=this.clone(changes,{keepId:true});
+      limitResourceChanges(changes,projected.system,projected.toObject().system);
+    }
+  }
+  prepareData() {
+    super.prepareData();
+    // Core already prepares the type model. Recheck bounds after final-phase effects.
+    boundPreparedResources(this.system,this._source.system);
+    if(this.type!=='ship'){
+      const bonus=activeItemRules(this.system,[...(this.items??[])]).filter(rule=>rule.kind==='defense').reduce((sum,rule)=>sum+rule.value,0);
+      this.system.defense.rating+=bonus-(this.system._opDefenseRuleBonus??0);
+      this.system._opDefenseRuleBonus=bonus;
+    }
   }
   getRollData() {
     if(this.type==="ship") return {vitality:{value:this.system.vitality.value,max:this.system.vitality.max},defense:{rating:this.system.defense.rating},movement:{distance:this.system.movement.distance}};
     const numbers=actorNumbers(this.system,this.type);
-    return {attributes: Object.fromEntries(Object.entries(numbers.attributes).map(([id, a]) => [id, {base: a.base, modifier: a.modifier}])), proficiency: {bonus:numbers.proficiency}, level: this.system.progression.level,exhaustionPenalty:2*numbers.exhaustion};
+    return {attributes: Object.fromEntries(Object.entries(numbers.attributes).map(([id, a]) => [id, {base: a.base, modifier: a.modifier}])), initiative:numbers.initiative,proficiency: {bonus:numbers.proficiency}, level: this.system.progression.level,exhaustionPenalty:2*numbers.exhaustion};
+  }
+  async rollSheetInitiative({advantage=false,disadvantage=false}={}) {
+    if(!this.isOwner||this.type==='ship')throw new Error('Você não pode rolar iniciativa por este ator.');
+    const formula=d20Formula({advantage,disadvantage,modifier:actorNumbers(this.system,this.type).initiative});
+    const combatants=[...(game.combat?.combatants??[])].filter(c=>c.actor?.uuid===this.uuid);
+    const tokenId=this.token?.id;
+    const match=tokenId?combatants.find(c=>c.tokenId===tokenId):combatants.length===1?combatants[0]:null;
+    if(match)return game.combat.rollInitiative([match.id],{formula});
+    if(combatants.length>1)throw new Error('Selecione o token no combate para rolar sua iniciativa.');
+    return new Roll(formula).toMessage({speaker:ChatMessage.getSpeaker({actor:this}),flavor:'Iniciativa'},{rollMode:game.settings.get('core','rollMode')});
   }
   async rollAttribute(id, {save = false, advantage = false, disadvantage = false,usesSight=false,usesHearing=false,fearSourceVisible=false} = {}) {
     if (!this.isOwner) throw new Error("Você não pode rolar por este ator.");

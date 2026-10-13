@@ -1,6 +1,15 @@
 import {actorCommand,damageInside} from './services.mjs';
 import {lifecycleOf,timerExpired,canConcentrate} from './lifecycle.mjs';
 import {actorNumbers} from './actor-numbers.mjs';
+import {automaticSuffocation,automaticRegeneration} from './automation-policy.mjs';
+import {limitResourceChanges} from './resource-limits.mjs';
+export function synchronizeResourceBounds(actor){
+  return actorCommand(actor,async()=>{
+    const changes=limitResourceChanges({},actor.system,actor.toObject().system);
+    if(Object.keys(changes).length)await actor.update(changes);
+    return changes;
+  });
+}
 export function isRuntimeAuthority(){return game.user?.isGM&&(!game.users?.activeGM||game.users.activeGM.id===game.user.id);}
 export async function cleanConcentrationEffects(source){
   const held=lifecycleOf(source).concentration;
@@ -9,8 +18,8 @@ export async function cleanConcentrationEffects(source){
 }
 export async function expireActorTimers(actor,combat=game.combat){
   const state=lifecycleOf(actor);
-  if(state.breathUntil!==undefined&&game.time.worldTime>=state.breathUntil){delete state.breathUntil;await actor.toggleStatusEffect('suffocated',{active:true});await actor.update({'flags.oprpg-native.lifecycle':state});}
-  const expired=(state.timers??[]).filter(timer=>timerExpired(timer,combat));
+  if(automaticSuffocation()&&state.breathUntil!==undefined&&game.time.worldTime>=state.breathUntil){delete state.breathUntil;await actor.toggleStatusEffect('suffocated',{active:true});await actor.update({'flags.oprpg-native.lifecycle':state});}
+  const expired=(state.timers??[]).filter(timer=>(timer.reason!=='suffocation'||automaticSuffocation())&&timerExpired(timer,combat));
   if(!expired.length)return;
   for(const timer of expired){
     if(timer.reason==='chaseBlind')await actor.update({'system.environment.chaseBlind':false});
@@ -34,8 +43,8 @@ export async function combatActorTick(actor,combat){
       state.lastStart=epoch;
       if(state.concentration?.prepared){const ownEpoch=`${combat.id}:${combat.combatant.id}:${combat.round}`;if(ownEpoch!==state.concentration.ownEpoch)delete state.concentration;}
       const regeneration=actor.system.npcFeatures?.regeneration??0;
-      if(regeneration>0&&actor.system.vitality.value>0&&!actor.system.vitalityState?.dead)await actor.update({'system.vitality.value':Math.min(actor.system.vitality.max,actor.system.vitality.value+regeneration)});
-      if(actor.statuses?.has('suffocated')){
+      if(automaticRegeneration()&&regeneration>0&&actor.system.vitality.value>0&&!actor.system.vitalityState?.dead)await actor.update({'system.vitality.value':Math.min(actor.system.vitality.max,actor.system.vitality.value+regeneration)});
+      if(actor.statuses?.has('suffocated')&&automaticSuffocation()){
         const suffocation=state.suffocation??{combat:combat.id,startRound:combat.round,checks:0};
         if(suffocation.combat!==combat.id){suffocation.combat=combat.id;suffocation.startRound=combat.round;suffocation.checks=0;}
         const grace=Math.max(1,1+actor.system.attributes.constitution.modifier);
@@ -47,7 +56,7 @@ export async function combatActorTick(actor,combat){
         }
         if(suffocation.unconsciousRound!==undefined&&combat.round-suffocation.unconsciousRound>=10&&actor.statuses.has('suffocated'))await actor.update({'system.vitalityState.dead':true});
         state.suffocation=suffocation;
-      }else delete state.suffocation;
+      }else if(!actor.statuses?.has('suffocated'))delete state.suffocation;
     }
     if(!own&&state.lastStart&&state.lastEnd!==state.lastStart){state.lastEnd=state.lastStart;if(state.sulong&&(game.time.worldTime-state.sulong.startedAt>=60||state.sulong.combat===combat.id&&combat.round-state.sulong.round>=10)){const exhaustion=Math.min(6,actor.system.exhaustion+1);await actor.update({'system.exhaustion':exhaustion,...(exhaustion===6?{'system.vitality.value':0}:{})});if(exhaustion===6)delete state.sulong;}}
     await actor.update({'flags.oprpg-native.lifecycle':state});
@@ -55,11 +64,16 @@ export async function combatActorTick(actor,combat){
 }
 export function registerRuntimeEvents(){
   if(!Hooks.on)return;
+  for(const event of ['createItem','updateItem','deleteItem','createActiveEffect','updateActiveEffect','deleteActiveEffect'])Hooks.on(event,async document=>{
+    const actor=document.parent?.documentName==='Actor'?document.parent:document.parent?.actor;
+    if(!isRuntimeAuthority()||!actor?.isOwner)return;
+    try{await synchronizeResourceBounds(actor);}catch(error){console.error('OP RPG · limites dos recursos',error);}
+  });
   Hooks.on('updateActor',async actor=>{if(!isRuntimeAuthority()||actor.type==='ship')return;try{const state=lifecycleOf(actor);if(state.concentration&&!canConcentrate(actor)){delete state.concentration;await actor.update({'flags.oprpg-native.lifecycle':state});}await cleanConcentrationEffects(actor);}catch(error){console.error('OP RPG · concentração',error);}});
   Hooks.on('createActiveEffect',async effect=>{const actor=effect.parent;if(isRuntimeAuthority()&&actor?.documentName==='Actor'&&actor.type!=='ship'&&!canConcentrate(actor)){const state=lifecycleOf(actor);delete state.concentration;await actor.update({'flags.oprpg-native.lifecycle':state});}});
   Hooks.on('deleteCombat',async()=>{if(!isRuntimeAuthority())return;for(const actor of game.actors??[])await actorCommand(actor,()=>expireActorTimers(actor,null));});
   Hooks.on('updateCombat',async combat=>{if(!isRuntimeAuthority())return;for(const actor of new Map(combat.turns.filter(turn=>turn.actor).map(turn=>[turn.actor.uuid,turn.actor])).values())try{if(actor.type==='ship')await actorCommand(actor,()=>expireActorTimers(actor,combat));else await combatActorTick(actor,combat);}catch(error){console.error('OP RPG · turno',error);}});
-  Hooks.on('updateWorldTime',async()=>{if(!isRuntimeAuthority())return;for(const actor of game.actors??[])if(actor.getFlag('oprpg-native','lifecycle'))try{await actorCommand(actor,async()=>{const state=lifecycleOf(actor);if(state.suffocation?.unconsciousAt!==undefined&&game.time.worldTime-state.suffocation.unconsciousAt>=60&&actor.statuses?.has('suffocated')&&actor.statuses?.has('unconscious'))await actor.update({'system.vitalityState.dead':true});await expireActorTimers(actor);});}catch(error){console.error('OP RPG · duração',error);}});
+  Hooks.on('updateWorldTime',async()=>{if(!isRuntimeAuthority())return;for(const actor of game.actors??[])if(actor.getFlag('oprpg-native','lifecycle'))try{await actorCommand(actor,async()=>{const state=lifecycleOf(actor);if(automaticSuffocation()&&state.suffocation?.unconsciousAt!==undefined&&game.time.worldTime-state.suffocation.unconsciousAt>=60&&actor.statuses?.has('suffocated')&&actor.statuses?.has('unconscious'))await actor.update({'system.vitalityState.dead':true});await expireActorTimers(actor);});}catch(error){console.error('OP RPG · duração',error);}});
 }
 export async function bleedingBeforeMovement(actor){
   if(!actor.statuses?.has('bleeding'))return;

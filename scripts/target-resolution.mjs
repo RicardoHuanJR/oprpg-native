@@ -1,11 +1,13 @@
-import {actorCommand,damageActor,healActor} from './services.mjs';
+import {actorCommand,damageInside,healInside} from './services.mjs';
 import {actorNumbers} from './actor-numbers.mjs';
 import {conditionSet,conditionModifiers,targetAttackModifiers} from './conditions.mjs';
 import {itemRuleAdvantage} from './item-rules.mjs';
 import {applicableLeaderAura} from './auras.mjs';
 import {timedBoundary,lifecycleOf} from './lifecycle.mjs';
 export async function savingThrow(actor,attribute,dc,{advantage=false,disadvantage=false,useLegendary=false,bonus=0}={}){
-  return actorCommand(actor,async()=>{
+  return actorCommand(actor,()=>savingThrowInside(actor,attribute,dc,{advantage,disadvantage,useLegendary,bonus}));
+}
+async function savingThrowInside(actor,attribute,dc,{advantage=false,disadvantage=false,useLegendary=false,bonus=0}={}){
     if(!Number.isFinite(dc)||dc<0)throw new Error('CD inválida.');
     const numbers=actorNumbers(actor.system,actor.type),value=numbers.attributes[attribute];if(!value)throw new Error('Atributo desconhecido.');
     const conditions=conditionModifiers(conditionSet(actor.statuses,{...actor.system.vitality,dead:actor.system.vitalityState?.dead}),{kind:'save',attribute});
@@ -17,7 +19,6 @@ export async function savingThrow(actor,attribute,dc,{advantage=false,disadvanta
     if(!success&&useLegendary&&!conditions.automaticFailure){const remaining=actor.system.npcFeatures?.legendaryResistance?.value??0;if(remaining<1)throw new Error('Sem resistências lendárias.');await actor.update({'system.npcFeatures.legendaryResistance.value':remaining-1});success=true;}
     if(roll)try{await roll.toMessage({speaker:ChatMessage.getSpeaker({actor}),flavor:`Salvaguarda · CD ${dc} · ${success?'sucesso':'falha'}`},{rollMode:game.settings.get('core','rollMode')});}catch{}
     return {success,roll,automaticFailure:conditions.automaticFailure};
-  });
 }
 export async function resolveAgainstTargets(item,operation,{targets,damage,legendaryTargets=[],statuses=[],distance=null,coverage='none',area=false,extraDamage=[]}){
   if(!game.user.isGM)throw new Error('O Narrador confirma a aplicação aos alvos.');
@@ -30,28 +31,30 @@ export async function resolveAgainstTargets(item,operation,{targets,damage,legen
   const cover=coverage==='half'?2:coverage==='threeQuarters'?5:0;
   const source=operation.resolution,results=[];
   for(const target of targets){
+    results.push(await actorCommand(target,async()=>{
     const marks=target.getFlag('oprpg-native','resolvedActivities')??[];
-    if(marks.includes(operation.requestId)){results.push({actor:target.uuid,duplicate:true});continue;}
+    if(marks.includes(operation.requestId))return {actor:target.uuid,duplicate:true};
     if(!target.isOwner)throw new Error('Sem permissão sobre o alvo.');
     let amount=damage,success=false,hit=true;
     if(source.kind==='save'){
       const dc=source.saveDC??(item.actor.type==='npc'?item.actor.system.saveDifficulty:8+item.actor.system.attributes[operation.activity.attribute].modifier+item.actor.system.proficiency.bonus);
-      const save=await savingThrow(target,source.saveAttribute,dc,{useLegendary:legendaryTargets.includes(target.uuid),bonus:source.saveAttribute==='dexterity'?cover:0});success=save.success;if(success)amount=source.onSave==='half'?Math.floor(damage/2):0;
+      const save=await savingThrowInside(target,source.saveAttribute,dc,{useLegendary:legendaryTargets.includes(target.uuid),bonus:source.saveAttribute==='dexterity'?cover:0});success=save.success;if(success)amount=source.onSave==='half'?Math.floor(damage/2):0;
     }else if(source.kind==='attack'){
       const attack=operation.attack;if(!attack)throw new Error('Ataque ainda não foi rolado.');hit=attack.natural===20||attack.natural!==1&&attack.total>=target.system.defense.rating+cover;
       const expertise=target.getFlag('oprpg-native','expertise');if(expertise?.kind==='autoMiss'){if(attack.natural!==20)hit=false;await target.update({'flags.oprpg-native.expertise':null});}if(!hit)amount=0;
     }
     let result=null;
-    if(source.kind==='healing')result=await healActor(target,amount);
-    else {const components=[{type:source.damageType,amount},...(operation.extraDamageComponents??[]).map((value,index)=>({type:value.type,amount:!hit||success&&source.onSave!=='half'?0:success?Math.floor(extraDamage[index]/2):extraDamage[index]}))];if(components.some(value=>value.amount>0))result=await damageActor(target,{components});}
-    let secondaryPassed=false;if(hit&&source.secondarySaveAttribute){const secondary=await savingThrow(target,source.secondarySaveAttribute,source.saveDC);secondaryPassed=secondary.success;}
+    if(source.kind==='healing')result=await healInside(target,amount);
+    else {const components=[{type:source.damageType,amount},...(operation.extraDamageComponents??[]).map((value,index)=>({type:value.type,amount:!hit||success&&source.onSave!=='half'?0:success?Math.floor(extraDamage[index]/2):extraDamage[index]}))];if(components.some(value=>value.amount>0))result=await damageInside(target,{components});}
+    let secondaryPassed=false;if(hit&&source.secondarySaveAttribute){const secondary=await savingThrowInside(target,source.secondarySaveAttribute,source.saveDC);secondaryPassed=secondary.success;}
     if(hit&&!success){const applied=[...new Set([...statuses,...(source.status?[source.status]:[]),...(source.secondaryStatus&&!secondaryPassed?[source.secondaryStatus]:[])])];if(applied.length){
       const concentration=lifecycleOf(item.actor).concentration;
       const [effect]=await target.createEmbeddedDocuments('ActiveEffect',[{name:`${item.name??'Ataque desarmado'} · condições`,statuses:applied,system:{changes:[]},flags:{'oprpg-native':{operation:operation.requestId,...(operation.activity.concentration&&concentration?{concentrationSource:item.actor.uuid,concentrationId:concentration.id}:{})}}}]);
       if(source.statusNextTurn){const boundary=timedBoundary(game.combat,target);if(boundary){const state=lifecycleOf(target);state.timers=[...(state.timers??[]),{...boundary,effectId:effect.id}];await target.update({'flags.oprpg-native.lifecycle':state});}}
     }}
     await target.update({'flags.oprpg-native.resolvedActivities':[...marks,operation.requestId].slice(-128)});
-    results.push({actor:target.uuid,success,hit,amount,result});
+    return {actor:target.uuid,success,hit,amount,result};
+    }));
   }
   return results;
 }

@@ -2,12 +2,12 @@ import {RuleDecisionRequired} from "./engine.mjs";
 export function combatContext(combat,actor) {
   if(!combat?.started)return null;
   const matches=combat.turns.filter(turn=>turn.actor?.uuid===actor.uuid);
-  if(matches.length!==1)throw new RuleDecisionRequired("O ator precisa corresponder a um único combatente para controlar ações automaticamente.");
+  if(matches.length!==1){if(game.settings.get('oprpg-native','actionTracking')!==true)return null;throw new RuleDecisionRequired("O ator precisa corresponder a um único combatente para controlar ações automaticamente.");}
   const controlled=actor.getFlag?.('oprpg-native','controlledMount');
   const rider=controlled?.combatId===combat.id?combat.turns.find(turn=>turn.actor?.uuid===controlled.riderUUID):null;
   const acting=rider??matches[0],index=combat.turns.indexOf(acting);
   const ownRound=combat.turn>=index?combat.round:combat.round-1;
-  return {encounter:combat.id,round:combat.round,turn:combat.turn,actorUUID:actor.uuid,globalEpoch:`${combat.id}:${combat.round}:${combat.turn}`,ownEpoch:`${combat.id}:${matches[0].id}:${ownRound}`,ownRound,isOwnTurn:combat.combatant?.id===acting.id,legendaryWindow:combat.getFlag("oprpg-native","endTurnWindow")};
+  return {encounter:combat.id,round:combat.round,turn:combat.turn,actorUUID:actor.uuid,trackActions:game.settings.get('oprpg-native','actionTracking')===true,globalEpoch:`${combat.id}:${combat.round}:${combat.turn}`,ownEpoch:`${combat.id}:${matches[0].id}:${ownRound}`,ownRound,isOwnTurn:combat.combatant?.id===acting.id,legendaryWindow:combat.getFlag("oprpg-native","endTurnWindow")};
 }
 export function activationPlan(state,{context,category,activation,attacksPerAction=1,ignoreBudget=false,countsAsTechnique=true,legendaryCost=1,legendaryValue=0,legendaryMax=0,reactive=false}) {
   if(!context||(ignoreBudget&&activation!=="legendary")||["passive","other"].includes(activation))return {state:structuredClone(state),legendaryValue};
@@ -16,6 +16,7 @@ export function activationPlan(state,{context,category,activation,attacksPerActi
     Object.assign(next,{ownEpoch:context.ownEpoch,actionUsed:false,powerfulUsed:false,bonusUsed:false,reactionUsed:false,attacksRemaining:0,specialAttacks:0,movementSpent:0,dashes:0,dodging:false,readyTrigger:''});
     if(context.ownRound>=1)legendaryValue=legendaryMax;
   }
+  if(context.trackActions===false&&activation!=="legendary")return {state:next,legendaryValue};
   if(["action","powerful","bonus"].includes(activation)&&!context.isOwnTurn)throw new Error("Esta atividade exige o turno do ator.");
   if(activation==="action") {
     if(category==="weapon") {

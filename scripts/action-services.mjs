@@ -3,7 +3,7 @@ import {bleedingBeforeMovement} from './runtime-events.mjs';
 import {combatContext,activationPlan} from './combat-rules.mjs';
 import {activeItemRules} from './item-rules.mjs';
 import {conditionSet,conditionModifiers} from './conditions.mjs';
-import {commonActionActivation,movementSpeeds,movementPlan,underwaterBudget} from './mechanics.mjs';
+import {commonActionActivation,movementSpeeds,movementPlan,movementCounterPlan,underwaterBudget} from './mechanics.mjs';
 
 export const COMMON_ACTIONS=Object.freeze({help:'Ajudar',dash:'Disparada',hide:'Esconder',dodge:'Esquivar',study:'Estudar',influence:'Influenciar',ready:'Preparar',search:'Procurar',useObject:'Usar um objeto',improvise:'Ação improvisada',release:'Executar ação preparada'});
 function allowed(actor,movement=false){
@@ -32,6 +32,28 @@ export function performCommonAction(actor,{action,useBonus=false,trigger=''}){
     const data={speaker:ChatMessage.getSpeaker({actor}),content:`<article class="oprpg-chat"><h3>${COMMON_ACTIONS[action]}</h3><p>${activation==='bonus'?'Ação bônus':activation==='reaction'?'Reação':'Ação'} registrada.</p>${action==='ready'?`<p>Gatilho: ${foundry.utils.escapeHTML(trigger)}</p>`:''}<p>Confira com o Narrador o teste, alvo e resultado. Preparar uma técnica também exige ação poderosa, PP e concentração; este botão prepara somente uma ação comum.</p></article>`};
     ChatMessage.applyRollMode(data,game.settings.get('core','rollMode'));
     try{await ChatMessage.create(data);}catch(error){ui.notifications.warn('Ação registrada, mas o cartão não foi enviado.');}
+    return plan;
+  });
+}
+
+export function correctCombatCounters(actor,{values,reason}={}){
+  return actorCommand(actor,async()=>{
+    if(!game.user.isGM||!reason?.trim())throw new Error('O Narrador informa o motivo da correção.');
+    const context=combatContext(game.combat,actor);
+    if(!context?.isOwnTurn)throw new Error('Corrija as reservas no turno do ator.');
+    const fields=['actionUsed','powerfulUsed','bonusUsed','reactionUsed','dodging'];
+    if(fields.some(key=>typeof values?.[key]!=='boolean')||['attacksRemaining','dashes'].some(key=>!Number.isInteger(values?.[key])||values[key]<0))throw new Error('Reservas inválidas.');
+    const plan=movementCounterPlan(actor.system.combat.state,{context,speeds:movementSpeeds(actor.system,[...actor.items],actor.statuses),amount:0});
+    const corrected={...plan.state,...Object.fromEntries([...fields,'attacksRemaining','dashes'].map(key=>[key,values[key]]))};
+    await actor.update({'system.combat.state':corrected,'flags.oprpg-native.counterCorrection':{reason:reason.trim(),user:game.user.id,worldTime:game.time.worldTime,ownEpoch:context.ownEpoch,before:plan.state,after:corrected}});
+    return corrected;
+  });
+}
+
+export function trackMovement(actor,options){
+  return actorCommand(actor,async()=>{
+    const plan=movementCounterPlan(actor.system.combat.state,{...options,context:combatContext(game.combat,actor),speeds:movementSpeeds(actor.system,[...actor.items],actor.statuses)});
+    await actor.update({'system.combat.state':plan.state});
     return plan;
   });
 }
