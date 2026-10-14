@@ -1,0 +1,10 @@
+<section class="op-attribute-rack" aria-label="Atributos">
+  <div class="ability-scores">
+    {{#each attributes}}
+    <div class="op-attribute-entry">
+      {{> "systems/oprpg-native/templates/legacy/attribute.hbs"}}
+      <span class="op-attribute-caption">{{label}}</span>
+    </div>
+    {{/each}}
+  </div>
+</section>

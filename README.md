@@ -1,4 +1,4 @@
-# OP RPG Nativo 0.3.8
+# OP RPG Nativo 0.3.9
 
 Sistema independente para Foundry v14.367. Manifesto estável: https://raw.githubusercontent.com/RicardoHuanJR/oprpg-native/main/system.json
 
@@ -18,7 +18,7 @@ Molduras, filigranas, emblemas e texturas discretas nas fichas, itens, atividade
 
 ## Correção de fidelidade
 
-OP RPG Nativo 0.3.8 — correção da transferência do layout aprovado
+OP RPG Nativo 0.3.9 — correção da transferência do layout aprovado
 
 Substitui as molduras recortadas por retangulares duplas, ajusta a tipografia e o espaçamento das perícias, a CR circular, o retrato, as três colunas, os cartões de origem e as barras retas. A 0.3.4 havia aplicado ornamentação mantendo partes da composição antiga; esta versão corrige essa diferença em relação à demonstração aprovada.
 
@@ -28,7 +28,7 @@ Dados reais, retratos personalizados, perícias completas e controles de configu
 
 ## Espaçamento e navegação
 
-OP RPG Nativo 0.3.8 — espaçamento e navegação da ficha
+OP RPG Nativo 0.3.9 — espaçamento e navegação da ficha
 
 Substitui os onze ícones laterais preenchidos por ícones vetoriais de contorno, preservando abas e funções. Corrige a altura de 36 px herdada pelos botões, as margens extras nas perícias e salvaguardas, o alinhamento dos títulos e valores das reservas e o botão lateral que criava uma barra de rolagem horizontal.
 
@@ -36,7 +36,7 @@ Os problemas da 0.3.5 foram medidos no cliente Foundry do mundo de teste. A apar
 
 ## CR e exaustão
 
-OP RPG Nativo 0.3.8 — exaustão e centralização da CR
+OP RPG Nativo 0.3.9 — exaustão e centralização da CR
 
 Bolinhas de exaustão aumentadas de 4 para 10 px, preservando os seis controles e suas áreas de clique. O rótulo interno da CR deixa de herdar a altura antiga de 62 px e passa a ocupar o círculo atual; o valor fica centralizado nos dois eixos.
 
@@ -44,10 +44,20 @@ Ajuste somente de CSS. Módulos, templates e estilos verificados; os demais arqu
 
 ## Cabeçalho e margens
 
-OP RPG Nativo 0.3.8 — proporções do cabeçalho e margens laterais
+OP RPG Nativo 0.3.9 — proporções do cabeçalho e margens laterais
 
 Cabeçalho reduzido de 280 para 210 px nas janelas largas: nome e controles compartilham a mesma faixa, mantendo os atributos abaixo. Em janelas estreitas, os controles e o nome continuam empilhados.
 
 A coluna do retrato e dos recursos recebe 14 px de margem interna em cada lateral. Sua largura passa de 185 para 213 px, preservando a largura útil do retrato, das barras e dos botões pequenos. Os intervalos verticais permanecem os mesmos, conforme a clarificação do usuário. A coluna recolhida mantém sua geometria anterior.
 
 Ajuste somente de CSS. Validação de sintaxe e integridade do pacote; aparência no cliente ainda depende da atualização. Sem alterações nas regras. Atualize pelo mesmo JSON e reinicie o Foundry.
+
+## Faixa ornamental dos atributos
+
+OP RPG Nativo 0.3.9 — faixa ornamental dos atributos
+
+Implementação da alternativa aprovada, com moldura dupla dourada, pequenos ornamentos, hexágonos regulares cinza e nomes completos dos seis atributos. A faixa participa da mesma grade de Perícias e Salvaguardas e ocupa as duas colunas: bordas esquerda e direita alinhadas sem posições ou margens compensatórias. Aparece somente em Detalhes. O retrato e os recursos mantêm sua própria coluna.
+
+Os botões de rolagem e os campos de edição continuam usando os mesmos dados e ações. O cabeçalho fica com 140 px nas janelas largas, pois os atributos agora estão abaixo dele. A faixa se reorganiza em três ou duas colunas em janelas estreitas. A ficha de NPC mantém seus atributos anteriores.
+
+Validação de módulos, CSS, templates, registro da nova seção, renderização de leitura/edição e integridade do pacote. Sem alterações nas regras. Conferência visual final no Foundry depende da atualização no cliente.

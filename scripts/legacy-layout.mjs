@@ -6,7 +6,7 @@ import {movementCounter} from './mechanics.mjs';
 import {primaryStyle} from './advancement.mjs';
 export class OriginalLayoutActorSheet extends OPRPGActorSheet {
   static DEFAULT_OPTIONS = {classes:['oprpg-native','op-document-sheet','oprpg-legacy','sheet','actor','character'],position:{width:940,height:940},actions:{...legacyConfigurationActions,...expandedConfigurationActions}};
-  static PARTS = {body:{template:'systems/oprpg-native/templates/legacy/character.hbs',templates:['systems/oprpg-native/templates/groups.hbs','systems/oprpg-native/templates/legacy/techniques.hbs','systems/oprpg-native/templates/legacy/header.hbs','systems/oprpg-native/templates/legacy/sidebar.hbs','systems/oprpg-native/templates/legacy/abilities.hbs','systems/oprpg-native/templates/legacy/attribute.hbs','systems/oprpg-native/templates/legacy/details.hbs'],scrollable:['.tab-body','.sidebar']}};
+  static PARTS = {body:{template:'systems/oprpg-native/templates/legacy/character.hbs',templates:['systems/oprpg-native/templates/groups.hbs','systems/oprpg-native/templates/legacy/techniques.hbs','systems/oprpg-native/templates/legacy/header.hbs','systems/oprpg-native/templates/legacy/sidebar.hbs','systems/oprpg-native/templates/legacy/abilities.hbs','systems/oprpg-native/templates/legacy/attribute-rack.hbs','systems/oprpg-native/templates/legacy/attribute.hbs','systems/oprpg-native/templates/legacy/details.hbs'],scrollable:['.tab-body','.sidebar']}};
   async _prepareContext(options) {
     if(this.editMode===undefined)this.editMode=false;
     const context=await super._prepareContext(options);
