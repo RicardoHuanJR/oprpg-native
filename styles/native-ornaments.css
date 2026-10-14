@@ -232,13 +232,14 @@
 .oprpg-native.oprpg-legacy .legacy-character .ac-badge{width:44px;height:44px;flex:0 0 44px;margin:0;align-self:center;clip-path:none;border:2px solid #c5b17a;border-radius:50%;background:linear-gradient(#393943,#222128)!important;box-shadow:0 0 0 3px #29252d,0 0 0 4px #8c784e;filter:none;}
 .oprpg-native.oprpg-legacy .legacy-character .ac-badge::before,
 .oprpg-native.oprpg-legacy .legacy-character .ac-badge::after{content:none;}
-.oprpg-native.oprpg-legacy .legacy-character .ac-badge input{font:700 20px/24px OPSlab,Georgia,serif;width:36px;height:28px;min-height:0;background:transparent;border:0;padding:0;text-align:center;}
+.oprpg-native.oprpg-legacy .legacy-character .ac-badge>label{width:100%;height:100%;min-height:0;margin:0;padding:0;display:flex;align-items:center;justify-content:center;}
+.oprpg-native.oprpg-legacy .legacy-character .ac-badge input{font:700 20px/28px OPSlab,Georgia,serif;width:36px;height:28px;min-height:0;margin:0;background:transparent;border:0;padding:0;text-align:center;}
 .oprpg-native.oprpg-legacy .legacy-character .ac-badge .op-resistance-label{display:none;}
 .oprpg-native.oprpg-legacy:has(.op-edit-mode[aria-checked=true]) .legacy-character .ac-badge .op-resistance-label{display:block;position:absolute;top:-16px;left:50%;transform:translateX(-50%);font:400 10px/14px OPCondensed,Arial,sans-serif;white-space:nowrap;}
 .oprpg-native.oprpg-legacy .legacy-character .op-cr-total{bottom:-9px;font-size:9px;}
 .oprpg-native.oprpg-legacy .legacy-character .pips{gap:0;}
 .oprpg-native.oprpg-legacy .legacy-character .pip{position:relative;width:18px;height:24px;min-height:24px;border:0;background:transparent;border-radius:0;box-shadow:none;}
-.oprpg-native.oprpg-legacy .legacy-character .pip::before{content:'';position:absolute;left:7px;top:10px;width:4px;height:4px;border:1px solid #dabb71;border-radius:50%;background:transparent;}
+.oprpg-native.oprpg-legacy .legacy-character .pip::before{content:'';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:10px;height:10px;border:1.5px solid #dabb71;border-radius:50%;background:transparent;}
 .oprpg-native.oprpg-legacy .legacy-character .pip.filled::before{background:#dabb71;}
 .oprpg-native.oprpg-legacy .legacy-character .lozenges.op-stat-strip{margin:4px 0 10px;padding:2px 0;}
 .oprpg-native.oprpg-legacy .legacy-character .op-stat-strip>.lozenge>i{display:none;}
