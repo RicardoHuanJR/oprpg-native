@@ -1,4 +1,4 @@
-# OP RPG Nativo 0.3.5
+# OP RPG Nativo 0.3.6
 
 Sistema independente para Foundry v14.367. Manifesto estável: https://raw.githubusercontent.com/RicardoHuanJR/oprpg-native/main/system.json
 
@@ -18,10 +18,18 @@ Molduras, filigranas, emblemas e texturas discretas nas fichas, itens, atividade
 
 ## Correção de fidelidade
 
-OP RPG Nativo 0.3.5 — correção da transferência do layout aprovado
+OP RPG Nativo 0.3.6 — correção da transferência do layout aprovado
 
 Substitui as molduras recortadas por retangulares duplas, ajusta a tipografia e o espaçamento das perícias, a CR circular, o retrato, as três colunas, os cartões de origem e as barras retas. A 0.3.4 havia aplicado ornamentação mantendo partes da composição antiga; esta versão corrige essa diferença em relação à demonstração aprovada.
 
 Dados reais, retratos personalizados, perícias completas e controles de configuração permanecem. Valores passivos podem ser consultados no título da perícia; PV temporários aparecem quando existentes. Não altera regras ou documentos dos mundos.
 
 164 testes passaram. Código, templates, CSS e pacote verificados. A comparação visual da nova versão dentro do Foundry depende da atualização; não foi apresentada como já concluída. Atualize pelo mesmo JSON e reinicie o Foundry.
+
+## Espaçamento e navegação
+
+OP RPG Nativo 0.3.6 — espaçamento e navegação da ficha
+
+Substitui os onze ícones laterais preenchidos por ícones vetoriais de contorno, preservando abas e funções. Corrige a altura de 36 px herdada pelos botões, as margens extras nas perícias e salvaguardas, o alinhamento dos títulos e valores das reservas e o botão lateral que criava uma barra de rolagem horizontal.
+
+Os problemas da 0.3.5 foram medidos no cliente Foundry do mundo de teste. A aparência final da correção ainda deve ser conferida após a atualização. Regras e documentos dos mundos preservados. 164 testes passaram; módulos, templates, CSS, símbolos e pacote verificados. Atualize pelo mesmo JSON e reinicie o Foundry.

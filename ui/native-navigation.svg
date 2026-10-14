@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+ <symbol id="details" viewBox="0 0 24 24"><circle cx="12" cy="7" r="3.5"/><path d="M5 21v-3a7 7 0 0 1 14 0v3"/></symbol>
+ <symbol id="inventory" viewBox="0 0 24 24"><path d="M5 7h14l1 14H4L5 7Zm4 0V5a3 3 0 0 1 6 0v2M9 11v1m6-1v1"/></symbol>
+ <symbol id="features" viewBox="0 0 24 24"><path d="M8 5h12M8 12h12M8 19h12"/><circle cx="4" cy="5" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="19" r="1"/></symbol>
+ <symbol id="techniques" viewBox="0 0 24 24"><path d="m3 3 6 1 11 11-5 5L4 9 3 3Zm18 0-6 1-5 5m-1 5-5 5m8-2 8-8M3 21l4-4m14 4-4-4M12 14l-3 3m6-8 3 3"/></symbol>
+ <symbol id="powers" viewBox="0 0 24 24"><path d="M6 14V6a2 2 0 0 1 4 0v5-7a2 2 0 0 1 4 0v7-5a2 2 0 0 1 4 0v8l2-2a2 2 0 0 1 3 2l-5 7H9l-5-7a2 2 0 0 1 2-3l3 3"/></symbol>
+ <symbol id="fruit" viewBox="0 0 24 24"><path d="M12 7c-7-4-12 4-8 10 2 3 5 4 8 2 3 2 6 1 8-2 4-6-1-14-8-10Zm0 0c0-3 2-5 5-5M12 7c-1-4-3-4-5-4"/></symbol>
+ <symbol id="effects" viewBox="0 0 24 24"><path d="m13 2-9 12h7l-1 8 10-13h-7l0-7Z"/></symbol>
+ <symbol id="training" viewBox="0 0 24 24"><path d="M8 9h8M8 15h8M5 5h3v14H5V5Zm11 0h3v14h-3V5ZM2 8h3v8H2V8Zm17 0h3v8h-3V8Z"/></symbol>
+ <symbol id="professions" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V4h8v3M3 12l9 3 9-3M10 13h4v4h-4v-4Z"/></symbol>
+ <symbol id="personal" viewBox="0 0 24 24"><path d="M4 21 19 6M7 18C2 10 13 0 21 3c0 10-9 18-14 15Zm3-3h6m-3-3h6"/></symbol>
+ <symbol id="creation" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m16 8-2 6-6 2 2-6 6-2Z"/></symbol>
+</svg>
