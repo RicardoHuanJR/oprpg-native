@@ -21,18 +21,18 @@
  background:transparent;border:0;
 }
 
-/* Tools, identity, and attributes occupy separate bands of the character header. */
+/* Identity and tools share a row, with a reserved band below for attributes. */
 .oprpg-native.oprpg-legacy.actor.character:not(.npc) .legacy-character>.sheet-header{
- display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:70px auto;
- height:280px;min-height:280px;flex:0 0 280px;padding:34px 24px 96px;gap:8px;
+ display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:70px;
+ height:210px;min-height:210px;flex:0 0 210px;padding:34px 24px 96px;gap:16px;
  background:linear-gradient(90deg,#12121b95 0%,#12271938 62%,#15131da6),var(--op-old-header,none) center/cover no-repeat;
  border-bottom:1px solid #a1884c80;
 }
 .oprpg-native.oprpg-legacy.actor.character:not(.npc) .sheet-header>.left{
- grid-column:1;grid-row:2;min-width:0;align-self:start;
+ grid-column:1;grid-row:1;min-width:0;align-self:center;
 }
 .oprpg-native.oprpg-legacy.actor.character:not(.npc) .sheet-header>.right{
- grid-column:1;grid-row:1;justify-self:end;align-self:start;transform:none;gap:8px;
+ grid-column:2;grid-row:1;justify-self:end;align-self:start;transform:none;gap:8px;
 }
 .oprpg-native.oprpg-legacy.actor.character:not(.npc) .sheet-header .document-name{
  font-size:40px;letter-spacing:1px;line-height:1.15;text-shadow:2px 2px 0 #11131a;
@@ -59,7 +59,7 @@
 .oprpg-native.oprpg-legacy.actor.character:not(.npc) .main-content{grid-template-columns:200px minmax(0,1fr);}
 .oprpg-native.oprpg-legacy.actor.character:not(.npc) .sidebar{width:200px;}
 .oprpg-native.oprpg-legacy.actor.character:not(.npc) .legacy-character.collapsed .main-content{grid-template-columns:35px minmax(0,1fr);}
-.oprpg-native.oprpg-legacy.actor.character:not(.npc) .legacy-character.collapsed .sidebar{width:35px;}
+.oprpg-native.oprpg-legacy.actor.character:not(.npc) .legacy-character.collapsed .sidebar{width:35px;padding:0;}
 .oprpg-native.oprpg-legacy.actor.character:not(.npc) .legacy-character.collapsed>.ability-scores{margin-left:52px;}
 
 /* Six equal sides: width / height = sqrt(3) / 2. Interior scales uniformly. */
@@ -208,9 +208,9 @@
 .oprpg-native.oprpg-legacy .legacy-character{font-family:OPCondensed,'Roboto Condensed',Arial,sans-serif;font-size:14px;line-height:1.55;}
 .oprpg-native.oprpg-legacy .legacy-character :is(.roboto-upper,.roboto-condensed-upper){font-family:OPCondensed,'Roboto Condensed',Arial,sans-serif;}
 .oprpg-native.oprpg-legacy.actor.character:not(.npc) .legacy-character .sheet-header .document-name{font-family:OPSlab,'Roboto Slab',Georgia,serif;font-variant:small-caps;font-size:36px;letter-spacing:.02em;}
-.oprpg-native.oprpg-legacy.actor.character:not(.npc) .main-content{grid-template-columns:185px minmax(0,1fr);gap:16px;padding:18px 16px;}
-.oprpg-native.oprpg-legacy.actor.character:not(.npc) .sidebar{width:185px;padding:0;}
-.oprpg-native.oprpg-legacy.actor.character:not(.npc) .legacy-character>.ability-scores{margin-left:217px;}
+.oprpg-native.oprpg-legacy.actor.character:not(.npc) .main-content{grid-template-columns:213px minmax(0,1fr);gap:16px;padding:18px 16px;}
+.oprpg-native.oprpg-legacy.actor.character:not(.npc) .sidebar{width:213px;padding:0 14px;box-sizing:border-box;}
+.oprpg-native.oprpg-legacy.actor.character:not(.npc) .legacy-character>.ability-scores{margin-left:245px;}
 .oprpg-native.oprpg-legacy.actor.character:not(.npc) .legacy-tabs{padding:0 54px 0 0;}
 .oprpg-native.oprpg-legacy .legacy-character .classic-details{grid-template-columns:minmax(0,1fr) minmax(0,.95fr);gap:16px;align-items:start;}
 .oprpg-native.oprpg-legacy .legacy-character .classic-details op-filigree-box{padding:16px;margin-bottom:10px;}
@@ -308,4 +308,15 @@
  @media(pointer:coarse){
   .oprpg-native.oprpg-legacy .op-technique-section li.op-technique-columns{grid-template-columns:minmax(0,1fr) 60px 140px;}
  }
+}
+
+/* Stack the identity below the tools only when the window cannot fit both. */
+@container op-window (max-width:650px){
+ .oprpg-native.oprpg-legacy.actor.character:not(.npc) .legacy-character>.sheet-header{grid-template-columns:minmax(0,1fr);grid-template-rows:70px auto;height:260px;min-height:260px;flex-basis:260px;padding:26px 18px 96px;gap:8px;}
+ .oprpg-native.oprpg-legacy.actor.character:not(.npc) .sheet-header>.left{grid-row:2;align-self:start;}
+ .oprpg-native.oprpg-legacy.actor.character:not(.npc) .sheet-header>.right{grid-column:1;}
+ .oprpg-native.oprpg-legacy.actor.character:not(.npc) .legacy-character>.ability-scores{margin-left:18px;}
+}
+@container op-window (max-width:520px){
+ .oprpg-native.oprpg-legacy.actor.character:not(.npc) .legacy-character>.sheet-header{height:180px;min-height:180px;flex-basis:180px;padding-bottom:18px;}
 }
